@@ -22,7 +22,9 @@ public class MusicActivity extends AppCompatActivity {
 
     public void init(){
         music = new ArrayList<>();
+        readMusic();
         analyzeMusic();
+
     }
 
     // 폴더 내 음악파일명 읽어옴
