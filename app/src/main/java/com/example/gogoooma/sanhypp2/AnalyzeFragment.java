@@ -1,11 +1,22 @@
 package com.example.gogoooma.sanhypp2;
 
-import android.content.Intent;
+
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatDialog;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,19 +29,43 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
-public class TalkActivity extends AppCompatActivity {
-    TextView talkContent;
-    HashMap<String, Integer> wordIUse = new HashMap<>();
-    HashMap<String, Integer> wordYouUse = new HashMap<>();
+
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class AnalyzeFragment extends Fragment {
+    View v;
+    TextView textView;
+    static String folderName = MainFragment.folderName;
+    int score = 0;
     String name = null;
+    AppCompatDialog progressDialog;
+    boolean flag = false;
+//    ProgressDialog loagindDialog; // 로딩화면
+//    void createThreadAndDialog() { /* ProgressDialog */
+//        loagindDialog = ProgressDialog.show(,
+//                "다이얼로그 명", "Loading.....",
+//                true, false);
+//        Thread thread = new Thread(new Runnable() {
+//            private static final int LOADING_TIME = 4000;
+//            @Override public void run()
+//            { // 시간걸리는 처리
+//                handler.sendEmptyMessageDelayed(0, LOADING_TIME);
+//            }
+//        });
+//        thread.start();
+//    }
+//    private Handler handler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            loagindDialog.dismiss();
+//            // 다이얼로그 삭제 // View갱신
+//        }
+//    };
 
     // 단어 저장할 변수
     HashMap<String, Integer> wordList;
@@ -39,11 +74,15 @@ public class TalkActivity extends AppCompatActivity {
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
     ArrayList<String> wordArr = new ArrayList<>();
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_talk);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        createThreadAndDialog();
+        v = inflater.inflate(R.layout.fragment_analyze, container, false);
+        textView = (TextView) v.findViewById(R.id.analyzeText);
         wordList = new HashMap<>();
+        //startProgress();
         Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
         while (scanner.hasNextLine()) {
             String wordListWord = scanner.nextLine();
@@ -60,32 +99,32 @@ public class TalkActivity extends AppCompatActivity {
         }
         scanner.close();
 
+        subDirList(folderName);
+        flag = true;
+        Toast.makeText(v.getContext(), "score = "+ score, Toast.LENGTH_SHORT).show();
 
 
-        Intent intent = getIntent();
-        final String folderPath = intent.getStringExtra("folderPath");
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.analyzeFab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                countWordFreq();
-                RecordScore rs = new RecordScore();
-                rs.fileName = name + ".txt";
-                rs.contents = "hi";
-                rs.WriteTextFile();
-            }
-        });
-        talkContent = (TextView) findViewById(R.id.talkContent);
-        talkContent.setMovementMethod(new ScrollingMovementMethod());
-        talkContent.setText("");
-        ReadTextFile(folderPath, "KakaoTalkChats.txt");
-        talkContent.setText("");
-        //Toast.makeText(TalkActivity.this, "Please Waiting", Toast.LENGTH_SHORT).show();
-        searchBinary();
+        return v;
     }
 
+    public void subDirList(String source){
+        File dir = new File(source);
+        File[] fileList = dir.listFiles();
+        try{
+            for(int idx = 0 ; idx < fileList.length ; idx++){
+                File file = fileList[idx];
+                if(file.isDirectory()) {
+                    ReadTextFile(file.getCanonicalPath(), "KakaoTalkChats.txt");
+                    searchBinary();
+                }
+            }
+        }catch(Exception e){
+
+        }
+    }
     public void ReadTextFile(String foldername, String filename) {
         try {
+            txtList.clear();
             File dir = new File(foldername);
             //디렉토리 폴더가 없으면 생성함
             if (!dir.exists()) {
@@ -149,13 +188,11 @@ public class TalkActivity extends AppCompatActivity {
                 if (high - low <= 1)
                     break;
             }
-            int myScore = 0;
-            int yourScore = 0;
             int twoScore = 0;
             int oneScore = 0;
             int toScore = 0;
             for (int i = high; i < txtList.size(); i++) {
-                talkContent.append(txtList.get(i) + '\n');
+                //talkContent.append(txtList.get(i) + '\n');
                 // name 이 안 들어가 있으면 pass
                 //if(txtList.get(i).indexOf(", ") != -1){
 
@@ -166,22 +203,19 @@ public class TalkActivity extends AppCompatActivity {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
                             if (x>20 && x < 30){
-                                myScore += wordList.get(wordArr.get(j));
+                                score += wordList.get(wordArr.get(j));
                                 twoScore += wordList.get(wordArr.get(j));
-                            }else
-                                yourScore += wordList.get(wordArr.get(j));
+                            }
                         } else if (txtList.get(i).contains(onenewdate)) {
                             if (x>20 && x < 30){
-                                myScore += wordList.get(wordArr.get(j)) * 1.5;
+                                score += wordList.get(wordArr.get(j)) * 1.5;
                                 oneScore += wordList.get(wordArr.get(j)) * 1.5;
-                            }else
-                                yourScore += wordList.get(wordArr.get(j)) * 1.5;
+                            }
                         } else if (txtList.get(i).contains(tonewdate)) {
                             if (x>20 && x < 30){
-                                myScore += wordList.get(wordArr.get(j)) * 2;
+                                score += wordList.get(wordArr.get(j)) * 2;
                                 toScore += wordList.get(wordArr.get(j)) * 2;
-                            }else
-                                yourScore += wordList.get(wordArr.get(j)) * 2;
+                            }
                         }
                     }
                 }
@@ -189,55 +223,72 @@ public class TalkActivity extends AppCompatActivity {
                 GlobalVariable.dayScore.add(oneScore);
                 GlobalVariable.dayScore.add(toScore);
             }
-            Toast.makeText(TalkActivity.this, myScore + " : " + yourScore, Toast.LENGTH_SHORT).show();
 
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
+    private void startProgress() {
+        progressON((MainActivity)getActivity(), "카카오톡 분석 중입니다...");
 
-    public void countWordFreq(){
-            for(int i=0; i<txtList.size(); i++){
-                int idx = txtList.get(i).indexOf(" : ");
-                if(idx > 0){
-                    String str = txtList.get(i).substring(idx + 3);
-                    String[] words = str.split(" ");
-                    for(int j=0; j<words.length; j++) {
-                        if (txtList.get(i).substring(0, idx).contains("회원님")) {
-                            if (wordIUse.get(words[j]) != null)
-                                wordIUse.put(words[j], wordIUse.get(words[j]) + 1);
-                            else
-                                wordIUse.put(words[j], 1);
-                        } else {
-                            if (wordYouUse.get(words[j]) != null)
-                                wordYouUse.put(words[j], wordYouUse.get(words[j]) + 1);
-                            else
-                                wordYouUse.put(words[j], 1);
-                        }
-                    }
-                }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                progressOFF();
             }
-            List<String> myList = sortByValue(wordIUse);
-            List<String> yourList = sortByValue(wordYouUse);
-
-            Intent intent = new Intent(getApplicationContext(),ChartActivity.class);
-            startActivity(intent);
-
+        }, 3500);
 
     }
-    public static List sortByValue(final Map map) {
-        List<String> list = new ArrayList();
-        list.addAll(map.keySet());
 
-        Collections.sort(list,new Comparator() {
-            public int compare(Object o1,Object o2) {
-                Object v1 = map.get(o1);
-                Object v2 = map.get(o2);
+    public void progressON(Activity activity, String message) {
 
-                return ((Comparable) v2).compareTo(v1);
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressSET(message);
+        } else {
+
+            progressDialog = new AppCompatDialog(activity);
+            progressDialog.setCancelable(false);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.progress_loading);
+            progressDialog.show();
+
+        }
+
+
+        final ImageView img_loading_frame = (ImageView) progressDialog.findViewById(R.id.iv_frame_loading);
+        final AnimationDrawable frameAnimation = (AnimationDrawable) img_loading_frame.getBackground();
+        img_loading_frame.post(new Runnable() {
+            @Override
+            public void run() {
+                frameAnimation.start();
             }
         });
 
-        return list;
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+    }
+    public void progressSET(String message) {
+
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            return;
+        }
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+
+    }
+    public void progressOFF() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

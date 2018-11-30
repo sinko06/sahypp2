@@ -1,6 +1,7 @@
 package com.example.gogoooma.sanhypp2;
 
 import android.Manifest;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -36,36 +37,15 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    final String folderName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/KakaoTalk/Chats";
-
-    ListView listView;
-    ArrayList<String> filePathList;
-    ArrayList<String> talkNameList;
-    ArrayAdapter<String> adapter;
-
-    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        listView = (ListView)findViewById(R.id.mainListView);
-        filePathList = new ArrayList<>();
-        talkNameList = new ArrayList<>();
-        subDirList(folderName);
-        adapter = new ArrayAdapter<String>(getApplicationContext(),
-                android.R.layout.simple_list_item_1, talkNameList);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), TalkActivity.class);
-                intent.putExtra("folderPath", filePathList.get(position));
-                startActivity(intent);
-            }
-        });
+        FragmentManager manager = getFragmentManager();
+        manager.beginTransaction().replace(R.id.content_main, new MainFragment()).commit();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -93,76 +73,7 @@ public class MainActivity extends AppCompatActivity
         getPermission();
     }
 
-    public void subDirList(String source){
-        File dir = new File(source);
-        File[] fileList = dir.listFiles();
-        try{
-            for(int i = 0 ; i < fileList.length ; i++){
-                File file = fileList[i];
-                if(file.isDirectory()) {
-                    String line = ReadFirstLine(file.getCanonicalPath(), "KakaoTalkChats.txt");
-                    if(line != null) {
-                        if(talkNameList.contains(line)){
-                            for(int t=0; t<talkNameList.size(); t++){
-                                if(talkNameList.get(t).equals(line)) {
-                                    talkNameList.set(t, line);
-                                    filePathList.set(t, file.getCanonicalPath());
-                                }
-                            }
-                        }
-                        else {
-                            talkNameList.add(line);
-                            filePathList.add(file.getCanonicalPath());
-                        }
-                    }
-                }
-            }
-        }catch(Exception e){
 
-        }
-    }
-
-    public String ReadFirstLine(String foldername, String filename){
-        try{
-            File dir = new File (foldername);
-            //디렉토리 폴더가 없으면 생성함
-            if(!dir.exists()){
-                dir.mkdir();
-            }
-            FileInputStream fis = new FileInputStream(foldername + "/" + filename);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-            String line = br.readLine();
-
-            br.close();
-            fis.close();
-            return line;
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-
-    public void WriteTextFile(String foldername, String filename, String contents){
-        try{
-            File dir = new File (foldername);
-            //디렉토리 폴더가 없으면 생성함
-            if(!dir.exists()){
-                dir.mkdir();
-            }
-            //파일 output stream 생성
-            FileOutputStream fos = new FileOutputStream(foldername+"/"+filename, true);
-            //파일쓰기
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
-            writer.write(contents);
-            writer.flush();
-
-            writer.close();
-            fos.close();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void onBackPressed() {
@@ -201,19 +112,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        FragmentManager manager = getFragmentManager();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.home) {
+            manager.beginTransaction().replace(R.id.content_main, new MainFragment()).commit();
+        } else if (id == R.id.analyze) {
+            manager.beginTransaction().replace(R.id.content_main, new AnalyzeFragment()).commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
