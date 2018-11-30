@@ -28,8 +28,7 @@ import java.util.Scanner;
 
 public class TalkActivity extends AppCompatActivity {
     TextView talkContent;
-    HashMap<String, Integer> wordIUse = new HashMap<>();
-    HashMap<String, Integer> wordYouUse = new HashMap<>();
+
     String name = null;
 
     // 단어 저장할 변수
@@ -110,6 +109,8 @@ public class TalkActivity extends AppCompatActivity {
 
     public void searchBinary() {
         try {
+            GlobalVariable.dayList.clear();
+            GlobalVariable.dayScore.clear();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             SimpleDateFormat newsimpleDateFormat = new SimpleDateFormat("yyyy년 M월 d일");
 
@@ -173,30 +174,32 @@ public class TalkActivity extends AppCompatActivity {
                         } else if (txtList.get(i).contains(onenewdate)) {
                             if (x>20 && x < 30){
                                 myScore += wordList.get(wordArr.get(j)) * 1.5;
-                                oneScore += wordList.get(wordArr.get(j)) * 1.5;
+                                oneScore += wordList.get(wordArr.get(j));
                             }else
                                 yourScore += wordList.get(wordArr.get(j)) * 1.5;
                         } else if (txtList.get(i).contains(tonewdate)) {
                             if (x>20 && x < 30){
                                 myScore += wordList.get(wordArr.get(j)) * 2;
-                                toScore += wordList.get(wordArr.get(j)) * 2;
+                                toScore += wordList.get(wordArr.get(j));
                             }else
                                 yourScore += wordList.get(wordArr.get(j)) * 2;
                         }
                     }
                 }
-                GlobalVariable.dayScore.add(twoScore);
-                GlobalVariable.dayScore.add(oneScore);
-                GlobalVariable.dayScore.add(toScore);
+
             }
             Toast.makeText(TalkActivity.this, myScore + " : " + yourScore, Toast.LENGTH_SHORT).show();
-
+            GlobalVariable.dayScore.add(twoScore);
+            GlobalVariable.dayScore.add(oneScore);
+            GlobalVariable.dayScore.add(toScore);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
     public void countWordFreq(){
+        GlobalVariable.wordIUse.clear();
+        GlobalVariable.wordYouUse.clear();
             for(int i=0; i<txtList.size(); i++){
                 int idx = txtList.get(i).indexOf(" : ");
                 if(idx > 0){
@@ -204,21 +207,21 @@ public class TalkActivity extends AppCompatActivity {
                     String[] words = str.split(" ");
                     for(int j=0; j<words.length; j++) {
                         if (txtList.get(i).substring(0, idx).contains("회원님")) {
-                            if (wordIUse.get(words[j]) != null)
-                                wordIUse.put(words[j], wordIUse.get(words[j]) + 1);
+                            if (GlobalVariable.wordIUse.get(words[j]) != null)
+                                GlobalVariable.wordIUse.put(words[j], GlobalVariable.wordIUse.get(words[j]) + 1);
                             else
-                                wordIUse.put(words[j], 1);
+                                GlobalVariable.wordIUse.put(words[j], 1);
                         } else {
-                            if (wordYouUse.get(words[j]) != null)
-                                wordYouUse.put(words[j], wordYouUse.get(words[j]) + 1);
+                            if (GlobalVariable.wordYouUse.get(words[j]) != null)
+                                GlobalVariable.wordYouUse.put(words[j], GlobalVariable.wordYouUse.get(words[j]) + 1);
                             else
-                                wordYouUse.put(words[j], 1);
+                                GlobalVariable.wordYouUse.put(words[j], 1);
                         }
                     }
                 }
             }
-            List<String> myList = sortByValue(wordIUse);
-            List<String> yourList = sortByValue(wordYouUse);
+            GlobalVariable.myList = sortByValue(GlobalVariable.wordIUse);
+            GlobalVariable.yourList = sortByValue(GlobalVariable.wordYouUse);
 
             Intent intent = new Intent(getApplicationContext(),ChartActivity.class);
             startActivity(intent);

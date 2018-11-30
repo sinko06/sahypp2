@@ -61,16 +61,45 @@ public abstract class SimpleFragment extends Fragment {
      */
     protected PieData generatePieData() {
 
-        int count = 4;
+        int sum =0;
 
+        for(int i=0;i<7;i++){
+            sum = sum + GlobalVariable.wordIUse.get(GlobalVariable.myList.get(i));
+        }
         ArrayList<PieEntry> entries1 = new ArrayList<PieEntry>();
 
 
-        for(int i = 0; i < GlobalVariable.dayList.size(); i++) {
-            entries1.add(new PieEntry((float)(Math.random()*60+40), GlobalVariable.dayList.get(i)));
+        for(int i = 0; i < 7; i++) {
+            entries1.add(new PieEntry((float)GlobalVariable.wordIUse.get(GlobalVariable.myList.get(i))/sum, GlobalVariable.myList.get(i)));
         }
 
-        PieDataSet ds1 = new PieDataSet(entries1,  "빈도수가 많은 단어");
+        PieDataSet ds1 = new PieDataSet(entries1,  "나의 최빈단어");
+        ds1.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        ds1.setSliceSpace(2f);
+        ds1.setValueTextColor(Color.WHITE);
+        ds1.setValueTextSize(12f);
+
+        PieData d = new PieData(ds1);
+        d.setValueTypeface(tf);
+
+        return d;
+    }
+
+    protected PieData generatePieData2() {
+
+        int sum =0;
+
+        for(int i=0;i<7;i++){
+            sum = sum + GlobalVariable.wordYouUse.get(GlobalVariable.yourList.get(i));
+        }
+        ArrayList<PieEntry> entries1 = new ArrayList<PieEntry>();
+
+
+        for(int i = 0; i < 7; i++) {
+            entries1.add(new PieEntry((float)GlobalVariable.wordYouUse.get(GlobalVariable.yourList.get(i))/sum, GlobalVariable.yourList.get(i)));
+        }
+
+        PieDataSet ds1 = new PieDataSet(entries1,  "상대방의 최빈단어");
         ds1.setColors(ColorTemplate.VORDIPLOM_COLORS);
         ds1.setSliceSpace(2f);
         ds1.setValueTextColor(Color.WHITE);

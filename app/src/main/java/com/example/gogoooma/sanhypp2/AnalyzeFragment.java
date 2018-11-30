@@ -3,13 +3,9 @@ package com.example.gogoooma.sanhypp2;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
@@ -18,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,7 +39,6 @@ public class AnalyzeFragment extends Fragment {
     int score = 0;
     String name = null;
     AppCompatDialog progressDialog = null;
-    boolean flag = false;
 
     // 단어 저장할 변수
     HashMap<String, Integer> wordList = null;
@@ -53,18 +47,16 @@ public class AnalyzeFragment extends Fragment {
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
     ArrayList<String> wordArr = new ArrayList<>();
-
+    Thread thread;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.fragment_analyze, container, false);
 
-        startProgress();
-
         textView = (TextView) v.findViewById(R.id.analyzeText);
         wordList = new HashMap<>();
 
-        new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
@@ -84,10 +76,11 @@ public class AnalyzeFragment extends Fragment {
                 scanner.close();
 
                 subDirList(folderName);
-                flag = true;
                 //Toast.makeText(v.getContext(), "score = "+ score, Toast.LENGTH_SHORT).show();
             }
-        }).start();
+        });
+        thread.start();
+        startProgress();
 
         return v;
     }
@@ -194,21 +187,21 @@ public class AnalyzeFragment extends Fragment {
                         } else if (txtList.get(i).contains(onenewdate)) {
                             if (x>20 && x < 30){
                                 score += wordList.get(wordArr.get(j)) * 1.5;
-                                oneScore += wordList.get(wordArr.get(j)) * 1.5;
+                                oneScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(tonewdate)) {
                             if (x>20 && x < 30){
                                 score += wordList.get(wordArr.get(j)) * 2;
-                                toScore += wordList.get(wordArr.get(j)) * 2;
+                                toScore += wordList.get(wordArr.get(j));
                             }
                         }
                     }
                 }
-                GlobalVariable.dayScore.add(twoScore);
-                GlobalVariable.dayScore.add(oneScore);
-                GlobalVariable.dayScore.add(toScore);
-            }
 
+            }
+            GlobalVariable.dayScore.add(twoScore);
+            GlobalVariable.dayScore.add(oneScore);
+            GlobalVariable.dayScore.add(toScore);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -219,12 +212,10 @@ public class AnalyzeFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true) {
-                    if(flag){
-                        progressOFF();
-                        break;
-                    }
-                }
+                try {
+                    thread.join();
+                }catch (Exception e){}
+                progressOFF();
             }
         }).start();
 
