@@ -2,13 +2,10 @@ package com.example.gogoooma.sanhypp2;
 
 import android.Manifest;
 import android.app.FragmentManager;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,20 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
@@ -47,18 +31,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager manager = getFragmentManager();
         manager.beginTransaction().replace(R.id.content_main, new MainFragment()).commit();
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setColor();
-                //Toast.makeText(MainActivity.this, folderName, Toast.LENGTH_SHORT).show();
-//                String fileName = "talk.txt";
-//                String content = "nooooob\n";
-//                WriteTextFile(folderName, fileName, content);
-                // folder Name : /KakaoTalk/Chats/
-            }
-        });
+
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

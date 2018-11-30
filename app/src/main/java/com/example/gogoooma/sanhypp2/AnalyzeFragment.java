@@ -3,10 +3,12 @@ package com.example.gogoooma.sanhypp2;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -56,6 +58,14 @@ public class AnalyzeFragment extends Fragment {
         v = inflater.inflate(R.layout.fragment_analyze, container, false);
 
         textView = (TextView) v.findViewById(R.id.analyzeText);
+        final FloatingActionButton fab = (FloatingActionButton)v.findViewById(R.id.analyzeFab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(v.getContext(),MusicActivity.class);
+                startActivity(intent);
+            }
+        });
         wordList = new HashMap<>();
 
         thread = new Thread(new Runnable() {

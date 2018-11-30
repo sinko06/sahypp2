@@ -1,12 +1,9 @@
 package com.example.gogoooma.sanhypp2;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 public class ChartActivity extends AppCompatActivity {
     ViewPager vp;
@@ -16,15 +13,6 @@ public class ChartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chart);
         vp = (ViewPager)findViewById(R.id.viewPager);
         vp.setAdapter(new pagerAdapter(getSupportFragmentManager()));
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.next);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), MusicActivity.class);
-                startActivity(intent);
-            }
-        });
-
     }
 
     private class pagerAdapter extends FragmentStatePagerAdapter

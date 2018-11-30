@@ -90,6 +90,7 @@ public class TalkActivity extends AppCompatActivity {
         //Toast.makeText(TalkActivity.this, "Please Waiting", Toast.LENGTH_SHORT).show();
 
         searchBinary();
+        talkContent.setText("분석 완료!");
     }
 
     public void ReadTextFile(String foldername, String filename) {
