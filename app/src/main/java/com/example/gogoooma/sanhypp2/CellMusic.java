@@ -3,6 +3,7 @@ package com.example.gogoooma.sanhypp2;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,11 +32,15 @@ public class CellMusic extends AppCompatActivity {
 
     Context context;
 
+    String gen;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cell_music);
         context = this.getBaseContext();
+        Intent i = getIntent();
+        gen = i.getStringExtra("str");
 
         // Adapter에 추가 데이터를 저장하기 위한 ArrayList
         songsList = new ArrayList<Song_Item>(); // ArrayList 생성
@@ -50,7 +55,6 @@ public class CellMusic extends AppCompatActivity {
 
     private void loadAudio() {
         ContentResolver contentResolver = getContentResolver();
-
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
@@ -68,7 +72,12 @@ public class CellMusic extends AppCompatActivity {
                 long mDuration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 String datapath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 // Save to audioList
-                listViewAdapter.addItem(track_id,albumId,title,artist,album,mDuration,datapath);
+                for (int i = 0; i < GlobalVariable.music.size(); i++) {
+                    if (GlobalVariable.music.get(i).getTitle().equals(title) && GlobalVariable.music.get(i).getTag().equals(gen)) {
+                        listViewAdapter.addItem(track_id, albumId, title, artist, album, mDuration, datapath);
+                        break;
+                    }
+                }
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -90,7 +99,7 @@ public class CellMusic extends AppCompatActivity {
         }
 
         // 음악 데이터 추가를 위한 메소드
-        public void addItem(long mId, long AlbumId, String Title, String Artist, String Album,long Duration,String DataPath) {
+        public void addItem(long mId, long AlbumId, String Title, String Artist, String Album, long Duration, String DataPath) {
             Song_Item item = new Song_Item();
             item.setmId(mId);
             item.setAlbumId(AlbumId);
@@ -127,11 +136,11 @@ public class CellMusic extends AppCompatActivity {
             final Integer index = Integer.valueOf(position);
 
             // 화면에 표시될 View
-            if(convertView == null){
+            if (convertView == null) {
                 viewHolder = new ViewHolder();
 
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.song_item,parent,false);
+                convertView = inflater.inflate(R.layout.song_item, parent, false);
 
                 convertView.setBackgroundColor(0x00FFFFFF);
                 convertView.invalidate();
@@ -151,8 +160,8 @@ public class CellMusic extends AppCompatActivity {
             final Song_Item songItem = songsList.get(position);
 
             // 아이템 내 각 위젯에 데이터 반영
-            Bitmap albumArt = CellMusic.getArtworkQuick(context, (int)songItem.getAlbumId(), 100, 100);
-            if(albumArt != null){
+            Bitmap albumArt = CellMusic.getArtworkQuick(context, (int) songItem.getAlbumId(), 100, 100);
+            if (albumArt != null) {
                 viewHolder.mImgAlbumArt.setImageBitmap(albumArt);
             }
             viewHolder.mTitle.setText(songItem.getTitle());
@@ -162,8 +171,8 @@ public class CellMusic extends AppCompatActivity {
             int hrs = (dur / 3600000);
             int mns = (dur / 60000) % 60000;
             int scs = dur % 60000 / 1000;
-            String songTime = String.format("%02d:%02d:%02d", hrs,  mns, scs);
-            if(hrs == 0){
+            String songTime = String.format("%02d:%02d:%02d", hrs, mns, scs);
+            if (hrs == 0) {
                 songTime = String.format("%02d:%02d", mns, scs);
             }
             viewHolder.mDuration.setText(songTime);
@@ -196,7 +205,7 @@ public class CellMusic extends AppCompatActivity {
                         fd.getFileDescriptor(), null, sBitmapOptionsCache);
                 int nextWidth = sBitmapOptionsCache.outWidth >> 1;
                 int nextHeight = sBitmapOptionsCache.outHeight >> 1;
-                while (nextWidth>w && nextHeight>h) {
+                while (nextWidth > w && nextHeight > h) {
                     sampleSize <<= 1;
                     nextWidth >>= 1;
                     nextHeight >>= 1;

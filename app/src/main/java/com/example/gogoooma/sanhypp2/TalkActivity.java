@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +39,7 @@ public class TalkActivity extends AppCompatActivity {
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
     ArrayList<String> wordArr = new ArrayList<>();
-
+    ArrayList<String> removeWord = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +60,14 @@ public class TalkActivity extends AppCompatActivity {
             }
         }
         scanner.close();
+
+        Scanner scanner2 = new Scanner(getResources().openRawResource(R.raw.removeword));
+        while(scanner2.hasNextLine()){
+            String word = scanner2.nextLine();
+            removeWord.add(word);
+        }
+
+        scanner2.close();
 
         Intent intent = getIntent();
         final String folderPath = intent.getStringExtra("folderPath");
@@ -97,12 +106,19 @@ public class TalkActivity extends AppCompatActivity {
                 name = line.substring(0, line.indexOf(" 님과"));
             }
             while ((line = br.readLine()) != null) {
-                if(line.length() > 2 && txtList.size() > 2){
-                    if(!line.substring(0,2).equals("20")) {
+                if (line.length() > 2 && txtList.size() > 2) {
+                    if (!line.substring(0, 2).equals("20")) {
                         int idx = txtList.size() - 1;
+                        Log.d(line, idx + "");
                         txtList.set(idx, txtList.get(idx) + " " + line);
                         continue;
                     }
+                }
+                if (line.length() >= 0 && line.length() <= 2  && txtList.size() > 2) {
+                    int idx = txtList.size() - 1;
+                    Log.d(line, idx + "");
+                    txtList.set(idx, txtList.get(idx) + " " + line);
+                    continue;
                 }
                 txtList.add(line);
             }
@@ -116,10 +132,10 @@ public class TalkActivity extends AppCompatActivity {
 
     public void searchBinary() {
         try {
-            int startdatenum = -60;
+            int startdatenum = -30;
             int count = 0;
-            GlobalVariable.dayList.clear();
-            GlobalVariable.dayScore.clear();
+            GlobalVariable.dayAllList.clear();
+            GlobalVariable.dayAllScore.clear();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             SimpleDateFormat newsimpleDateFormat = new SimpleDateFormat("yyyy년 M월 d일");
 
@@ -171,19 +187,26 @@ public class TalkActivity extends AppCompatActivity {
                         i--;
                     else
                         flag = false;
-                    GlobalVariable.dayAllScore.add(yourScore);
-                    yourScore = 0;
-                    startdatenum++;
-                    Calendar cal1 = Calendar.getInstance();
-                    cal1.add(cal1.DATE, startdatenum);
-                    Date dayago = cal1.getTime();
-                    String string = simpleDateFormat.format(dayago);
-                    Date datetemp = simpleDateFormat.parse(string);
-                    String date = newsimpleDateFormat.format(datetemp);
+                        GlobalVariable.dayAllScore.add(yourScore);
+                        yourScore = 0;
+                        startdatenum++;
+                        Calendar cal1= Calendar.getInstance();
+                        cal1.add(cal1.DATE, startdatenum);
+                        Date dayago = cal1.getTime();
+                        String string = simpleDateFormat.format(dayago);
+                        Date datetemp = simpleDateFormat.parse(string);
+                        String date = newsimpleDateFormat.format(datetemp);
+                        Log.d(date,"날짜");
+                        Log.d(txtList.get(i),"내용");
+                        Log.d(String.valueOf(startdatenum),"num");
+                        //Toast.makeText(getApplicationContext(),string,Toast.LENGTH_SHORT).show();
+                        startdate = date;
+                        GlobalVariable.dayAllList.add(startdate);
+                        cal1.clear();
 
-                    //Toast.makeText(getApplicationContext(),string,Toast.LENGTH_SHORT).show();
-                    startdate = date;
-                    GlobalVariable.dayAllList.add(startdate);
+
+
+
                 }
 
             }
@@ -224,6 +247,34 @@ public class TalkActivity extends AppCompatActivity {
         }
         GlobalVariable.myList = sortByValue(GlobalVariable.wordIUse);
         GlobalVariable.yourList = sortByValue(GlobalVariable.wordYouUse);
+
+        for(int i=0;i<GlobalVariable.myList.size();i++){
+            int check=0;
+            for(int j=0;j<removeWord.size();j++){
+                if(GlobalVariable.myList.get(i).equals(removeWord.get(j))){
+                    check=1;
+                }
+            }
+            if(check==1){
+                GlobalVariable.myList.remove(i);
+                i--;
+            }
+        }
+
+        for(int i=0;i<GlobalVariable.yourList.size();i++){
+            int check=0;
+            for(int j=0;j<removeWord.size();j++){
+                if(GlobalVariable.yourList.get(i).equals(removeWord.get(j))){
+                    check=1;
+                }
+            }
+            if(check==1){
+                GlobalVariable.yourList.remove(i);
+                i--;
+            }
+        }
+
+
 
         Intent intent = new Intent(getApplicationContext(), ChartActivity.class);
         startActivity(intent);

@@ -43,6 +43,9 @@ public abstract class SimpleFragment extends Fragment {
                 case 0:ds.setColor(Color.rgb(200,20,20));break;
                 case 1:ds.setColor(Color.rgb(20 ,200,20));break;
                 case 2:ds.setColor(Color.rgb(20,20,200));break;
+                case 3:ds.setColor(Color.rgb(200,200,20));break;
+                case 4:ds.setColor(Color.rgb(20 ,200,200));break;
+                case 5:ds.setColor(Color.rgb(200,20,200));break;
 
             }
             sets.add(ds);
@@ -70,7 +73,7 @@ public abstract class SimpleFragment extends Fragment {
 
 
         for(int i = 0; i < 7; i++) {
-            entries1.add(new PieEntry((float)GlobalVariable.wordIUse.get(GlobalVariable.myList.get(i))/sum, GlobalVariable.myList.get(i)));
+            entries1.add(new PieEntry((float)GlobalVariable.wordIUse.get(GlobalVariable.myList.get(i)), GlobalVariable.myList.get(i)));
         }
 
         PieDataSet ds1 = new PieDataSet(entries1,  "나의 최빈단어");
@@ -96,7 +99,7 @@ public abstract class SimpleFragment extends Fragment {
 
 
         for(int i = 0; i < 7; i++) {
-            entries1.add(new PieEntry((float)GlobalVariable.wordYouUse.get(GlobalVariable.yourList.get(i))/sum, GlobalVariable.yourList.get(i)));
+            entries1.add(new PieEntry((float)GlobalVariable.wordYouUse.get(GlobalVariable.yourList.get(i)), GlobalVariable.yourList.get(i)));
         }
 
         PieDataSet ds1 = new PieDataSet(entries1,  "상대방의 최빈단어");

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class AnalyzeFragment extends Fragment {
     ArrayList<String> txtList = new ArrayList<>();
     ArrayList<String> wordArr = new ArrayList<>();
     Thread thread;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -63,10 +65,10 @@ public class AnalyzeFragment extends Fragment {
                 while (scanner.hasNextLine()) {
                     String wordListWord = scanner.nextLine();
                     int wordListScore = Integer.parseInt(scanner.nextLine());
-                    if(wordListWord.length() > 1) {
+                    if (wordListWord.length() > 1) {
                         if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
                             wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
-                        if(wordListWord.length() > 2)
+                        if (wordListWord.length() > 2)
                             if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
                                 wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
                         wordList.put(wordListWord, wordListScore);
@@ -85,21 +87,22 @@ public class AnalyzeFragment extends Fragment {
         return v;
     }
 
-    public void subDirList(String source){
+    public void subDirList(String source) {
         File dir = new File(source);
         File[] fileList = dir.listFiles();
-        try{
-            for(int idx = 0 ; idx < fileList.length ; idx++){
+        try {
+            for (int idx = 0; idx < fileList.length; idx++) {
                 File file = fileList[idx];
-                if(file.isDirectory()) {
+                if (file.isDirectory()) {
                     ReadTextFile(file.getCanonicalPath(), "KakaoTalkChats.txt");
                     searchBinary();
                 }
             }
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
+
     public void ReadTextFile(String foldername, String filename) {
         try {
             txtList.clear();
@@ -115,12 +118,19 @@ public class AnalyzeFragment extends Fragment {
                 name = line.substring(0, line.indexOf(" 님과"));
             }
             while ((line = br.readLine()) != null) {
-                if(line.length() > 2 && txtList.size() > 2){
-                    if(!line.substring(0,2).equals("20")) {
+                if (line.length() > 2 && txtList.size() > 2) {
+                    if (!line.substring(0, 2).equals("20")) {
                         int idx = txtList.size() - 1;
+                        Log.d(line, idx + "");
                         txtList.set(idx, txtList.get(idx) + " " + line);
                         continue;
                     }
+                }
+                if (line.length() >= 0 && line.length() <= 2  && txtList.size() > 2) {
+                    int idx = txtList.size() - 1;
+                    Log.d(line, idx + "");
+                    txtList.set(idx, txtList.get(idx) + " " + line);
+                    continue;
                 }
                 txtList.add(line);
             }
@@ -187,17 +197,17 @@ public class AnalyzeFragment extends Fragment {
                     if (txtList.get(i).contains(wordArr.get(j))) {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
-                            if (x>20 && x < 30){
+                            if (x > 20 && x < 30) {
                                 score += wordList.get(wordArr.get(j));
                                 twoScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(onenewdate)) {
-                            if (x>20 && x < 30){
+                            if (x > 20 && x < 30) {
                                 score += wordList.get(wordArr.get(j)) * 1.5;
                                 oneScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(tonewdate)) {
-                            if (x>20 && x < 30){
+                            if (x > 20 && x < 30) {
                                 score += wordList.get(wordArr.get(j)) * 2;
                                 toScore += wordList.get(wordArr.get(j));
                             }
@@ -213,15 +223,17 @@ public class AnalyzeFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
     private void startProgress() {
-        progressON((MainActivity)getActivity(), "카카오톡 분석 중입니다...");
+        progressON((MainActivity) getActivity(), "카카오톡 분석 중입니다...");
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     thread.join();
-                }catch (Exception e){}
+                } catch (Exception e) {
+                }
                 progressOFF();
             }
         }).start();
@@ -262,6 +274,7 @@ public class AnalyzeFragment extends Fragment {
             tv_progress_message.setText(message);
         }
     }
+
     public void progressSET(String message) {
 
         if (progressDialog == null || !progressDialog.isShowing()) {
@@ -274,6 +287,7 @@ public class AnalyzeFragment extends Fragment {
         }
 
     }
+
     public void progressOFF() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();

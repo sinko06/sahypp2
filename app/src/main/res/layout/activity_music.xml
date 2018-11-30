@@ -3,17 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
     tools:context=".MusicActivity">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/Choose"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@android:color/holo_purple"
-        app:srcCompat="@android:drawable/ic_search_category_default" />
+    <TextView
+        android:id="@+id/choosegenre"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="장르별 노래 선택"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/proposeEmotion"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="감정에 따른 자동 추천"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/youtube"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:gravity="center"
+        android:text="유튜브 노래 추천"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20dp" />
 
 
 </LinearLayout>

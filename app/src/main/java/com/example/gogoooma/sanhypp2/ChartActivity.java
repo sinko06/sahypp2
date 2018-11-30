@@ -41,7 +41,7 @@ public class ChartActivity extends AppCompatActivity {
                 case 0:
                     return new PieChartActivity();
                 case 1:
-                    return new BarChartFrag();
+                    return new LineChartActivity1();
             }
             return null;
         }

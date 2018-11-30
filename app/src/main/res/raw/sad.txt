@@ -1,0 +1,7 @@
+Acoustic
+Ballad
+Blues
+Classical
+New Age
+R&B
+Soul
