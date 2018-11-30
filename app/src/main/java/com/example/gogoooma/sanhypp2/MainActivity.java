@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.home) {
             manager.beginTransaction().replace(R.id.content_main, new MainFragment()).commit();
         } else if (id == R.id.analyze) {
+
             manager.beginTransaction().replace(R.id.content_main, new AnalyzeFragment()).commit();
         }
 
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
     public void setColor(){
         if (Build.VERSION.SDK_INT >= 21) {
             Random random = new Random();

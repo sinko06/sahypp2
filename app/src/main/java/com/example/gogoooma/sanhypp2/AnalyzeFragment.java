@@ -38,37 +38,16 @@ import java.util.Scanner;
  * A simple {@link Fragment} subclass.
  */
 public class AnalyzeFragment extends Fragment {
-    View v;
-    TextView textView;
+    View v = null;
+    TextView textView = null;
     static String folderName = MainFragment.folderName;
     int score = 0;
     String name = null;
-    AppCompatDialog progressDialog;
+    AppCompatDialog progressDialog = null;
     boolean flag = false;
-//    ProgressDialog loagindDialog; // 로딩화면
-//    void createThreadAndDialog() { /* ProgressDialog */
-//        loagindDialog = ProgressDialog.show(,
-//                "다이얼로그 명", "Loading.....",
-//                true, false);
-//        Thread thread = new Thread(new Runnable() {
-//            private static final int LOADING_TIME = 4000;
-//            @Override public void run()
-//            { // 시간걸리는 처리
-//                handler.sendEmptyMessageDelayed(0, LOADING_TIME);
-//            }
-//        });
-//        thread.start();
-//    }
-//    private Handler handler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            loagindDialog.dismiss();
-//            // 다이얼로그 삭제 // View갱신
-//        }
-//    };
 
     // 단어 저장할 변수
-    HashMap<String, Integer> wordList;
+    HashMap<String, Integer> wordList = null;
     // 단어 잠깐 저장해둔 거
 
     // line 읽어오면서 라인 하나하나 다 저장
@@ -78,31 +57,37 @@ public class AnalyzeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        createThreadAndDialog();
         v = inflater.inflate(R.layout.fragment_analyze, container, false);
+
+        startProgress();
+
         textView = (TextView) v.findViewById(R.id.analyzeText);
         wordList = new HashMap<>();
-        //startProgress();
-        Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
-        while (scanner.hasNextLine()) {
-            String wordListWord = scanner.nextLine();
-            int wordListScore = Integer.parseInt(scanner.nextLine());
-            if(wordListWord.length() > 1) {
-                if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
-                    wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
-                if(wordListWord.length() > 2)
-                    if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
-                        wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
-                wordList.put(wordListWord, wordListScore);
-                wordArr.add(wordListWord);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
+                while (scanner.hasNextLine()) {
+                    String wordListWord = scanner.nextLine();
+                    int wordListScore = Integer.parseInt(scanner.nextLine());
+                    if(wordListWord.length() > 1) {
+                        if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
+                            wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
+                        if(wordListWord.length() > 2)
+                            if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
+                                wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
+                        wordList.put(wordListWord, wordListScore);
+                        wordArr.add(wordListWord);
+                    }
+                }
+                scanner.close();
+
+                subDirList(folderName);
+                flag = true;
+                //Toast.makeText(v.getContext(), "score = "+ score, Toast.LENGTH_SHORT).show();
             }
-        }
-        scanner.close();
-
-        subDirList(folderName);
-        flag = true;
-        Toast.makeText(v.getContext(), "score = "+ score, Toast.LENGTH_SHORT).show();
-
+        }).start();
 
         return v;
     }
@@ -231,12 +216,17 @@ public class AnalyzeFragment extends Fragment {
     private void startProgress() {
         progressON((MainActivity)getActivity(), "카카오톡 분석 중입니다...");
 
-        new Handler().postDelayed(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                progressOFF();
+                while(true) {
+                    if(flag){
+                        progressOFF();
+                        break;
+                    }
+                }
             }
-        }, 3500);
+        }).start();
 
     }
 
@@ -254,7 +244,7 @@ public class AnalyzeFragment extends Fragment {
             progressDialog = new AppCompatDialog(activity);
             progressDialog.setCancelable(false);
             progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-            progressDialog.setContentView(R.layout.progress_loading);
+            progressDialog.setContentView(R.layout.fragment_loading);
             progressDialog.show();
 
         }
