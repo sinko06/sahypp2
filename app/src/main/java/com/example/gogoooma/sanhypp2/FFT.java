@@ -1,6 +1,6 @@
 package com.example.gogoooma.sanhypp2;
-
 public class FFT {
+
     int n, m;
 
     // Lookup tables. Only need to recompute when size of FFT changes.
@@ -23,6 +23,7 @@ public class FFT {
             cos[i] = Math.cos(-2 * Math.PI * i / n);
             sin[i] = Math.sin(-2 * Math.PI * i / n);
         }
+
     }
 
     public void fft(double[] x, double[] y) {
@@ -47,31 +48,6 @@ public class FFT {
                 t1 = y[i];
                 y[i] = y[j];
                 y[j] = t1;
-            }
-        }
-
-        // FFT
-        n1 = 0;
-        n2 = 1;
-
-        for (i = 0; i < m; i++) {
-            n1 = n2;
-            n2 = n2 + n2;
-            a = 0;
-
-            for (j = 0; j < n1; j++) {
-                c = cos[a];
-                s = sin[a];
-                a += 1 << (m - i - 1);
-
-                for (k = j; k < n; k = k + n2) {
-                    t1 = c * x[k + n1] - s * y[k + n1];
-                    t2 = s * x[k + n1] + c * y[k + n1];
-                    x[k + n1] = x[k] - t1;
-                    y[k + n1] = y[k] - t2;
-                    x[k] = x[k] + t1;
-                    y[k] = y[k] + t2;
-                }
             }
         }
     }

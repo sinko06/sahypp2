@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -125,6 +124,10 @@ public class TalkActivity extends AppCompatActivity {
             Date todate = simpleDateFormat.parse(tostring);
             String tonewdate = newsimpleDateFormat.format(todate);
 
+            GlobalVariable.dayList.add(twonewdate);
+            GlobalVariable.dayList.add(onenewdate);
+            GlobalVariable.dayList.add(tonewdate);
+
             int high = txtList.size(), low = 0, mid;
             while (true) {
                 mid = (high + low) / 2;
@@ -138,7 +141,9 @@ public class TalkActivity extends AppCompatActivity {
             }
             int myScore = 0;
             int yourScore = 0;
-
+            int twoScore = 0;
+            int oneScore = 0;
+            int toScore = 0;
             for (int i = high; i < txtList.size(); i++) {
                 talkContent.append(txtList.get(i) + '\n');
                 // name 이 안 들어가 있으면 pass
@@ -150,24 +155,29 @@ public class TalkActivity extends AppCompatActivity {
                     if (txtList.get(i).contains(wordArr[j])) {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
-                            if (x>20 && x < 30)
+                            if (x>20 && x < 30) {
                                 myScore += wordList.get(wordArr[j]);
-                            else
+                                twoScore += wordList.get(wordArr[j]);
+                            }else
                                 yourScore += wordList.get(wordArr[j]);
                         } else if (txtList.get(i).contains(onenewdate)) {
-                            if (x>20 && x < 30)
+                            if (x>20 && x < 30){
                                 myScore += wordList.get(wordArr[j]) * 1.5;
-                            else
+                                oneScore += wordList.get(wordArr[j]);
+                            }else
                                 yourScore += wordList.get(wordArr[j]) * 1.5;
                         } else if (txtList.get(i).contains(tonewdate)) {
-                            if (x>20 && x < 30)
+                            if (x>20 && x < 30){
                                 myScore += wordList.get(wordArr[j]) * 2;
-                            else
+                                toScore += wordList.get(wordArr[j]) * 2;
+                            }else
                                 yourScore += wordList.get(wordArr[j]) * 2;
                         }
                     }
                 }
-
+                GlobalVariable.dayScore.add(twoScore);
+                GlobalVariable.dayScore.add(oneScore);
+                GlobalVariable.dayScore.add(toScore);
             }
             Toast.makeText(TalkActivity.this, myScore + " : " + yourScore, Toast.LENGTH_SHORT).show();
 
