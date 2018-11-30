@@ -39,7 +39,6 @@ public class AnalyzeFragment extends Fragment {
     View v = null;
     TextView textView = null;
     static String folderName = MainFragment.folderName;
-    int score = 0;
     String name = null;
     AppCompatDialog progressDialog = null;
 
@@ -111,6 +110,7 @@ public class AnalyzeFragment extends Fragment {
         } catch (Exception e) {
 
         }
+        GlobalVariable.score = (int)GlobalVariable.score/fileList.length;
     }
 
     public void ReadTextFile(String foldername, String filename) {
@@ -208,17 +208,17 @@ public class AnalyzeFragment extends Fragment {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j));
+                                GlobalVariable.score += wordList.get(wordArr.get(j));
                                 twoScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(onenewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j)) * 1.5;
+                                GlobalVariable.score += wordList.get(wordArr.get(j)) * 1.5;
                                 oneScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(tonewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j)) * 2;
+                                GlobalVariable.score += wordList.get(wordArr.get(j)) * 2;
                                 toScore += wordList.get(wordArr.get(j));
                             }
                         }
