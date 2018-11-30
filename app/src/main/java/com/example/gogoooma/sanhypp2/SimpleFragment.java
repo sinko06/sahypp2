@@ -34,11 +34,11 @@ public abstract class SimpleFragment extends Fragment {
 
         ArrayList<IBarDataSet> sets = new ArrayList<IBarDataSet>();
 
-        for(int i = 0; i < GlobalVariable.dayList.size(); i++) {
+        for(int i = 0; i < GlobalVariable.dayAllList.size(); i++) {
             ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
-            entries.add(new BarEntry(i,(float) GlobalVariable.dayScore.get(i)));
-            BarDataSet ds = new BarDataSet(entries, GlobalVariable.dayList.get(i));
-            switch(i%3)
+            entries.add(new BarEntry(i,(float) GlobalVariable.dayAllScore.get(i)));
+            BarDataSet ds = new BarDataSet(entries, GlobalVariable.dayAllList.get(i));
+            switch(i%60)
             {
                 case 0:ds.setColor(Color.rgb(200,20,20));break;
                 case 1:ds.setColor(Color.rgb(20 ,200,20));break;

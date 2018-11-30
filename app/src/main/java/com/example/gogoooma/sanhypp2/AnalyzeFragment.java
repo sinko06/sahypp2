@@ -115,6 +115,13 @@ public class AnalyzeFragment extends Fragment {
                 name = line.substring(0, line.indexOf(" 님과"));
             }
             while ((line = br.readLine()) != null) {
+                if(line.length() > 2 && txtList.size() > 2){
+                    if(!line.substring(0,2).equals("20")) {
+                        int idx = txtList.size() - 1;
+                        txtList.set(idx, txtList.get(idx) + " " + line);
+                        continue;
+                    }
+                }
                 txtList.add(line);
             }
             br.close();

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GlobalVariable {
+    static ArrayList<String> dayAllList = new ArrayList<String>();
+    static ArrayList<Integer> dayAllScore = new ArrayList<Integer>();
     static ArrayList<String> dayList = new ArrayList<String>();
     static ArrayList<Integer> dayScore = new ArrayList<Integer>();
     static HashMap<String, Integer> wordIUse = new HashMap<>();
