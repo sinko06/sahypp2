@@ -1,8 +1,11 @@
 package com.example.gogoooma.sanhypp2;
 
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,6 +21,14 @@ public class MusicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
         init();
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.Choose);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               Intent intent = new Intent(getApplicationContext(),Choose.class);
+               startActivity(intent);
+            }
+        });
     }
 
     public void init(){

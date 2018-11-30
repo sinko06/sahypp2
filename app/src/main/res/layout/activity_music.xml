@@ -6,6 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".MusicActivity">
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/Choose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@android:color/holo_purple"
+        app:srcCompat="@android:drawable/ic_search_category_default" />
 
 
 </LinearLayout>

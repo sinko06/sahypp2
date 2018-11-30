@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.gogoooma.sanhypp2">
-
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -23,7 +25,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".TalkActivity" />
-        <activity android:name=".MusicActivity"></activity>
+        <activity android:name=".ChartActivity" />
+        <activity android:name=".MusicActivity" />
+        <activity
+            android:name=".Choose"
+            android:theme="@style/Theme.MyDialog" />
+        <activity android:name=".Youtube" />
+        <activity android:name=".CellMusic"></activity>
     </application>
 
 </manifest>

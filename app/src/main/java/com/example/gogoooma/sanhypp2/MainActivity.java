@@ -3,16 +3,14 @@ package com.example.gogoooma.sanhypp2;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -20,11 +18,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,11 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -49,13 +43,21 @@ public class MainActivity extends AppCompatActivity
     ArrayList<String> talkNameList;
     ArrayAdapter<String> adapter;
 
+    Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         listView = (ListView)findViewById(R.id.mainListView);
+        filePathList = new ArrayList<>();
+        talkNameList = new ArrayList<>();
+        subDirList(folderName);
+        adapter = new ArrayAdapter<String>(getApplicationContext(),
+                android.R.layout.simple_list_item_1, talkNameList);
+        listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -69,13 +71,8 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                filePathList = new ArrayList<>();
-                talkNameList = new ArrayList<>();
-                subDirList(folderName);
-                adapter = new ArrayAdapter<String>(getApplicationContext(),
-                        android.R.layout.simple_list_item_1, talkNameList);
-                listView.setAdapter(adapter);
-                //                Toast.makeText(MainActivity.this, folderName, Toast.LENGTH_SHORT).show();
+                setColor();
+                //Toast.makeText(MainActivity.this, folderName, Toast.LENGTH_SHORT).show();
 //                String fileName = "talk.txt";
 //                String content = "nooooob\n";
 //                WriteTextFile(folderName, fileName, content);
@@ -104,15 +101,27 @@ public class MainActivity extends AppCompatActivity
                 File file = fileList[i];
                 if(file.isDirectory()) {
                     String line = ReadFirstLine(file.getCanonicalPath(), "KakaoTalkChats.txt");
-                    if(line != null)
-                        talkNameList.add(line);
-                    filePathList.add(file.getCanonicalPath());
+                    if(line != null) {
+                        if(talkNameList.contains(line)){
+                            for(int t=0; t<talkNameList.size(); t++){
+                                if(talkNameList.get(t).equals(line)) {
+                                    talkNameList.set(t, line);
+                                    filePathList.set(t, file.getCanonicalPath());
+                                }
+                            }
+                        }
+                        else {
+                            talkNameList.add(line);
+                            filePathList.add(file.getCanonicalPath());
+                        }
+                    }
                 }
             }
         }catch(Exception e){
 
         }
     }
+
     public String ReadFirstLine(String foldername, String filename){
         try{
             File dir = new File (foldername);
@@ -220,6 +229,17 @@ public class MainActivity extends AppCompatActivity
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
+        }
+    }
+    public void setColor(){
+        if (Build.VERSION.SDK_INT >= 21) {
+            Random random = new Random();
+
+            int color = Color.rgb(random.nextInt(255),random.nextInt(255),
+                    random.nextInt(255));
+
+            getWindow().setStatusBarColor(color);
+//            toolbar.setBackgroundColor(color);
         }
     }
 }

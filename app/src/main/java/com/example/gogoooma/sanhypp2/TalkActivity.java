@@ -35,12 +35,10 @@ public class TalkActivity extends AppCompatActivity {
     // 단어 저장할 변수
     HashMap<String, Integer> wordList;
     // 단어 잠깐 저장해둔 거
-    String[] wordArr = new String[1000];
-    // 단어 개수 비교하려고 임시 인덱스
-    int tempIdx = 0;
+
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
-
+    ArrayList<String> wordArr = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +48,19 @@ public class TalkActivity extends AppCompatActivity {
         while (scanner.hasNextLine()) {
             String wordListWord = scanner.nextLine();
             int wordListScore = Integer.parseInt(scanner.nextLine());
-            wordList.put(wordListWord, wordListScore);
-            wordArr[tempIdx] = wordListWord;
-            tempIdx++;
+            if(wordListWord.length() > 1) {
+                if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
+                    wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
+                if(wordListWord.length() > 2)
+                    if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
+                        wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
+                wordList.put(wordListWord, wordListScore);
+                wordArr.add(wordListWord);
+            }
         }
         scanner.close();
+
+
 
         Intent intent = getIntent();
         final String folderPath = intent.getStringExtra("folderPath");
@@ -63,6 +69,10 @@ public class TalkActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 countWordFreq();
+                RecordScore rs = new RecordScore();
+                rs.fileName = name + ".txt";
+                rs.contents = "hi";
+                rs.WriteTextFile();
             }
         });
         talkContent = (TextView) findViewById(R.id.talkContent);
@@ -150,28 +160,25 @@ public class TalkActivity extends AppCompatActivity {
                 //if(txtList.get(i).indexOf(", ") != -1){
 
                 // word 안에 있는 단어가 들어가는지 하나하나 확인, 한 단어 두 번 들어가면 못 셈(수정필요)
-                for (int j = 0; j < tempIdx; j++) {
+                for (int j = 0; j < wordArr.size(); j++) {
                     // 단어가 들어가면 그 단어 가중치만큼 더함 ( 나중에는 가중치 직접 부여 )
-                    if (txtList.get(i).contains(wordArr[j])) {
+                    if (txtList.get(i).contains(wordArr.get(j))) {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
-                            if (x>20 && x < 30) {
-                                myScore += wordList.get(wordArr[j]);
-                                twoScore += wordList.get(wordArr[j]);
-                            }else
-                                yourScore += wordList.get(wordArr[j]);
+                            if (x>20 && x < 30)
+                                myScore += wordList.get(wordArr.get(j));
+                            else
+                                yourScore += wordList.get(wordArr.get(j));
                         } else if (txtList.get(i).contains(onenewdate)) {
-                            if (x>20 && x < 30){
-                                myScore += wordList.get(wordArr[j]) * 1.5;
-                                oneScore += wordList.get(wordArr[j]);
-                            }else
-                                yourScore += wordList.get(wordArr[j]) * 1.5;
+                            if (x>20 && x < 30)
+                                myScore += wordList.get(wordArr.get(j)) * 1.5;
+                            else
+                                yourScore += wordList.get(wordArr.get(j)) * 1.5;
                         } else if (txtList.get(i).contains(tonewdate)) {
-                            if (x>20 && x < 30){
-                                myScore += wordList.get(wordArr[j]) * 2;
-                                toScore += wordList.get(wordArr[j]) * 2;
-                            }else
-                                yourScore += wordList.get(wordArr[j]) * 2;
+                            if (x>20 && x < 30)
+                                myScore += wordList.get(wordArr.get(j)) * 2;
+                            else
+                                yourScore += wordList.get(wordArr.get(j)) * 2;
                         }
                     }
                 }
@@ -187,36 +194,33 @@ public class TalkActivity extends AppCompatActivity {
     }
 
     public void countWordFreq(){
-        for(int i=0; i<txtList.size(); i++){
-            int idx = txtList.get(i).indexOf(" : ");
-            if(idx > 0){
-                String str = txtList.get(i).substring(idx + 3);
-                String[] words = str.split(" ");
-                for(int j=0; j<words.length; j++) {
-                    if (txtList.get(i).substring(0, idx).contains("회원님")) {
-                        if (wordIUse.get(words[j]) != null)
-                            wordIUse.put(words[j], wordIUse.get(words[j]) + 1);
-                        else
-                            wordIUse.put(words[j], 1);
-                    } else {
-                        if (wordYouUse.get(words[j]) != null)
-                            wordYouUse.put(words[j], wordYouUse.get(words[j]) + 1);
-                        else
-                            wordYouUse.put(words[j], 1);
+            for(int i=0; i<txtList.size(); i++){
+                int idx = txtList.get(i).indexOf(" : ");
+                if(idx > 0){
+                    String str = txtList.get(i).substring(idx + 3);
+                    String[] words = str.split(" ");
+                    for(int j=0; j<words.length; j++) {
+                        if (txtList.get(i).substring(0, idx).contains("회원님")) {
+                            if (wordIUse.get(words[j]) != null)
+                                wordIUse.put(words[j], wordIUse.get(words[j]) + 1);
+                            else
+                                wordIUse.put(words[j], 1);
+                        } else {
+                            if (wordYouUse.get(words[j]) != null)
+                                wordYouUse.put(words[j], wordYouUse.get(words[j]) + 1);
+                            else
+                                wordYouUse.put(words[j], 1);
+                        }
                     }
                 }
             }
-        }
-        List<String> myList = sortByValue(wordIUse);
-        List<String> yourList = sortByValue(wordYouUse);
-        talkContent.setText("");
-        for(int i=0; i<15; i++) {
-            talkContent.append("내가 "+(i+1)+"번째로 많이 한 말 : "+myList.get(i) + " = " + wordIUse.get(myList.get(i))+"번" + '\n');
-        }
-        talkContent.append("\n\n\n");
-        for(int i=0; i<15; i++) {
-            talkContent.append(name+"이(가) "+(i+1)+"번째로 많이 한 말 : "+yourList.get(i) + " = " + wordYouUse.get(yourList.get(i))+"번" + '\n');
-        }
+            List<String> myList = sortByValue(wordIUse);
+            List<String> yourList = sortByValue(wordYouUse);
+
+            Intent intent = new Intent(getApplicationContext(),ChartActivity.class);
+            startActivity(intent);
+
+
     }
     public static List sortByValue(final Map map) {
         List<String> list = new ArrayList();
