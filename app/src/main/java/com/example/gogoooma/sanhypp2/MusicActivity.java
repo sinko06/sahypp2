@@ -27,51 +27,97 @@ public class MusicActivity extends AppCompatActivity {
     List<String> positiveGenre;
     List<String> energeticGenre;
     List<String> loudGenre;
+    private Boolean isFabOpen = false;
 
-    TextView cg;
-    TextView pe;
-    TextView yt;
+    private android.support.design.widget.FloatingActionButton fab, fab1, fab2, fab3;
+    private android.view.animation.Animation fab_open, fab_close, rotate_forward, rotate_backward;
     int score;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
+        fab = (android.support.design.widget.FloatingActionButton)findViewById(R.id.fab);
+        fab1 = (android.support.design.widget.FloatingActionButton)findViewById(R.id.fab1);
+        fab2 = (android.support.design.widget.FloatingActionButton)findViewById(R.id.fab2);
+        fab3 = (android.support.design.widget.FloatingActionButton)findViewById(R.id.fab3);
+
+        fab_open = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_open);
+        fab_close = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_close);
+        rotate_forward = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.rotate_forward);
+        rotate_backward = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.rotate_backward);
+       android.app.FragmentManager fragmentManager = getFragmentManager();
+       android.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+         fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                   animateFAB();
+            }
+        });
+         fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), chooseGenreActivity.class);
+                startActivity(intent);
+            }
+        });
+         fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(),Youtube.class);
+                startActivity(intent);
+            }
+        });
+
+         fab3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                Intent intent = new Intent(this,Youtube.class);
+//                startActivity(intent);
+            }
+        });
+
 
         init();
+    }
+
+
+
+        public void animateFAB() {
+
+        if (isFabOpen) {
+
+            fab.startAnimation(rotate_backward);
+            fab1.startAnimation(fab_close);
+            fab2.startAnimation(fab_close);
+            fab3.startAnimation(fab_close);
+            fab1.setClickable(false);
+            fab2.setClickable(false);
+            fab3.setClickable(false);
+
+            isFabOpen = false;
+            android.util.Log.d("Raj", "close");
+
+        } else {
+
+            fab.startAnimation(rotate_forward);
+            fab1.startAnimation(fab_open);
+            fab2.startAnimation(fab_open);
+            fab3.startAnimation(fab_open);
+            fab1.setClickable(true);
+            fab2.setClickable(true);
+            fab3.setClickable(true);
+            isFabOpen = true;
+            android.util.Log.d("Raj", "open");
+
+        }
     }
 
     public void init() {
         readMusic();
         analyzeMusic();
 
-        cg = (TextView)findViewById(R.id.choosegenre);
-        pe = (TextView)findViewById(R.id.proposeEmotion);
-        yt = (TextView)findViewById(R.id.youtube);
-
-        cg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(),chooseGenreActivity.class);
-                startActivity(intent);
-            }
-        });
-
-//        pe.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(getApplicationContext(), /*교희가 넣을 공간*/);
-//                startActivity(intent);
-//            }
-//        });
-
-        yt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(),Youtube.class);
-                startActivity(intent);
-            }
-        });
-    }
+     }
 
     // 폴더 내 음악파일명 읽어옴
     public void readMusic() {
