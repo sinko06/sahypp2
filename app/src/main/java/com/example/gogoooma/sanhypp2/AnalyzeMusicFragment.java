@@ -12,7 +12,6 @@ import android.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,8 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,45 +42,85 @@ public class AnalyzeMusicFragment extends Fragment {
     View v;
     int mPeakPos;
     Thread thread;
+    TextView textView;
     AppCompatDialog progressDialog = null;
     final String root = Environment.getExternalStorageDirectory().getAbsolutePath();
     ArrayList<File> fileList = new ArrayList<>();
-    HashMap<File, Double> musicScoreMap = new HashMap();
+    HashMap<String, Double> musicScoreMap = new HashMap();
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.fragment_analyze_music, container, false);
         final File rootFile = new File(root);
+        textView = (TextView) v.findViewById(R.id.analyzeMusicText);
 
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 ReadTextFile();
                 findSubFiles(rootFile, fileList);
-                for (int i = 0; i < fileList.size(); i++)
-                    musicScoreMap.put(fileList.get(i), calcMusicScore(fileList.get(i)));
+                try {
+                    for (int i = 0; i < fileList.size(); i++)
+                        musicScoreMap.put(fileList.get(i).getCanonicalPath(), calcMusicScore(fileList.get(i)));
+                }catch (Exception e){
+
+                }
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Iterator iterator = sortByValue(musicScoreMap).iterator();
+                        ArrayList<String> arr1 = new ArrayList<>();
+                        ArrayList<Double> arr2 = new ArrayList<>();
+                        while(iterator.hasNext()) {
+                            String temp = (String) iterator.next();
+                            arr1.add(temp);
+                            arr2.add(musicScoreMap.get(temp));
+                        }
+                        for(int i=0; i<10; i++)
+                            textView.append(arr1.get(i) + "\r\n" + arr2.get(i) + "\r\n");
+                        for(int i=1; i<=10; i++)
+                            textView.append(arr1.get(arr1.size()-i) + "\r\n" + arr2.get(arr1.size()-i) + "\r\n");
+                    }
+
+                });
             }
         });
 
         thread.start();
         startProgress();
-
-//        Toast.makeText(v.getContext(), musicScoreList.size()+"", Toast.LENGTH_SHORT).show();
-        //startProgress();
         return v;
     }
+
+    public static List sortByValue(final Map map) {
+        List<String> list = new ArrayList();
+        list.addAll(map.keySet());
+
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                Object v1 = map.get(o1);
+                Object v2 = map.get(o2);
+
+                return ((Comparable) v2).compareTo(v1);
+            }
+        });
+
+        return list;
+    }
+
     public void findSubFiles(File parentFile, ArrayList<File> subFiles) {
-        if(parentFile.isFile()){
+        if (parentFile.isFile()) {
             String fileName = parentFile.getName();
             try {
                 if (fileName.substring(fileName.lastIndexOf('.') + 1).equals("mp3")) {
-                    if (!musicScoreMap.containsKey(parentFile)) {
+                    if (!musicScoreMap.containsKey(parentFile.getCanonicalPath())) {
                         fileList.add(parentFile);
                     }
                 }
-            }catch (Exception e){}
-        } else if(parentFile.isDirectory()) {
+            } catch (Exception e) {
+            }
+        } else if (parentFile.isDirectory()) {
             File[] childFiles = parentFile.listFiles();
             for (File childFile : childFiles) {
                 findSubFiles(childFile, subFiles);
@@ -85,9 +128,10 @@ public class AnalyzeMusicFragment extends Fragment {
         }
     }
 
-    public double calcMusicScore(File file){
+    public double calcMusicScore(File file) {
         double sum = 0;
         try {
+            //String file = Environment.getExternalStorageDirectory() + "/TodayOneMusic/a11.mp3";
             byte[] soundBytes;
 
             InputStream inputStream =
@@ -97,6 +141,10 @@ public class AnalyzeMusicFragment extends Fragment {
             soundBytes = toByteArray(inputStream);
 
             inputStream.close();
+            //File file2 = new File(Environment.getExternalStorageDirectory() + "/TodayOneMusic/music.txt");
+            //FileWriter os = new FileWriter(file2, true);
+            //os.write(sum + "\r\n");
+            //os.close();
             double[] buffer = calculateFFT(soundBytes); // --> HERE ^__^
             for (int i = 0; i < buffer.length; i++) {
                 double number = buffer[i];
@@ -106,48 +154,48 @@ public class AnalyzeMusicFragment extends Fragment {
 
         } catch (Exception e) {
         }
-        String contents = file.getAbsolutePath() +"\r\n" + sum + "\r\n";
-        new RecordScore().writeThisFile("music_analysis.txt", contents, true);
+        try {
+            String contents = file.getAbsolutePath() + "\r\n" + sum + "\r\n";
+            new RecordScore().writeThisFile("music_analysis.txt", contents, true);
+        } catch (Exception e5) {
+        }
         return sum;
     }
-    byte[] buffers = new byte[1024];
+
+    byte[] buffer = new byte[1024];
     public byte[] toByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int read = 0;
-
         while (read != -1) {
-            read = in.read(buffers);
+            read = in.read(buffer);
             if (read != -1)
-                out.write(buffers, 0, read);
+                out.write(buffer, 0, read);
         }
         out.close();
-        in.close();
         return out.toByteArray();
     }
-    public double[] calculateFFT(byte[] signal)
-    {
-        final int mNumberOfFFTPoints =1024;
+
+    public double[] calculateFFT(byte[] signal) {
+        final int mNumberOfFFTPoints = 1024;
         double mMaxFFTSample;
 
         double temp;
         Complex[] y;
         Complex[] complexSignal = new Complex[mNumberOfFFTPoints];
-        double[] absSignal = new double[mNumberOfFFTPoints/2];
+        double[] absSignal = new double[mNumberOfFFTPoints / 2];
 
-        for(int i = 0; i < mNumberOfFFTPoints; i++){
-            temp = (double)((signal[2*i] & 0xFF) | (signal[2*i+1] << 8)) / 32768.0F;
-            complexSignal[i] = new Complex(temp,0.0);
+        for (int i = 0; i < mNumberOfFFTPoints; i++) {
+            temp = (double) ((signal[2 * i] & 0xFF) | (signal[2 * i + 1] << 8)) / 32768.0F;
+            complexSignal[i] = new Complex(temp, 0.0);
         }
 
         y = FFT.fft(complexSignal); // --> Here I use FFT class
 
         mMaxFFTSample = 0.0;
         mPeakPos = 0;
-        for(int i = 0; i < (mNumberOfFFTPoints/2); i++)
-        {
+        for (int i = 0; i < (mNumberOfFFTPoints / 2); i++) {
             absSignal[i] = Math.sqrt(Math.pow(y[i].re(), 2) + Math.pow(y[i].im(), 2));
-            if(absSignal[i] > mMaxFFTSample)
-            {
+            if (absSignal[i] > mMaxFFTSample) {
                 mMaxFFTSample = absSignal[i];
                 mPeakPos = i;
             }
@@ -172,15 +220,14 @@ public class AnalyzeMusicFragment extends Fragment {
             String file = "";
             double score;
             while ((line = br.readLine()) != null) {
-                if(flag) {
+                if (flag) {
                     file = line;
                     flag = false;
                     continue;
-                }
-                else {
+                } else {
                     flag = true;
                     score = Double.parseDouble(line);
-                    musicScoreMap.put(new File(file), score);
+                    musicScoreMap.put(file, score);
                 }
             }
             br.close();
@@ -190,9 +237,9 @@ public class AnalyzeMusicFragment extends Fragment {
             e.printStackTrace();
         }
     }
-    private void startProgress() {
-        progressON((MainActivity)getActivity(), "음악 분석 중입니다...");
 
+    private void startProgress() {
+        progressON((MusicActivity) getActivity(), "음악 분석 중입니다...");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -262,3 +309,4 @@ public class AnalyzeMusicFragment extends Fragment {
     }
 
 }
+

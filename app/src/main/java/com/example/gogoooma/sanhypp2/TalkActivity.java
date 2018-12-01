@@ -103,7 +103,7 @@ public class TalkActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        talkContent.setText("분석완료");
+                        talkContent.setText("대충 있어보이는 내용으로 채울 예정 ex) 오늘 한 말 수나 가장 긍정적인 말(점수max)이 들어간 대화 등 통계 대충 넣기");
                     }
                 });
             }

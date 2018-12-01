@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:scrollbars="vertical"
-        android:textSize="50dp"
+        android:textSize="15dp"
         android:textColor="@color/colorPrimary"/>
 
     <android.support.design.widget.FloatingActionButton
@@ -24,6 +24,6 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:backgroundTint="@android:color/holo_purple"
-        app:srcCompat="@android:drawable/ic_search_category_default" />
+        app:srcCompat="@drawable/heart" />
 
 </android.support.design.widget.CoordinatorLayout>

@@ -14,4 +14,5 @@ public class GlobalVariable {
     static HashMap<String, Integer> wordYouUse = new HashMap<>();
     static List<String> myList;
     static List<String> yourList;
+    static int score;
 }

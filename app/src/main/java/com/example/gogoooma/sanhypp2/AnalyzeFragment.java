@@ -39,7 +39,6 @@ public class AnalyzeFragment extends Fragment {
     View v = null;
     TextView textView = null;
     static String folderName = MainFragment.folderName;
-    int score = 0;
     String name = null;
     AppCompatDialog progressDialog = null;
 
@@ -89,6 +88,12 @@ public class AnalyzeFragment extends Fragment {
 
                 subDirList(folderName);
                 //Toast.makeText(v.getContext(), "score = "+ score, Toast.LENGTH_SHORT).show();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textView.setText(GlobalVariable.score+" : 최근 3일간의 기분 점수\r\n 여기도 통계나 이런 거 넣을 예정..");
+                    }
+                });
             }
         });
         thread.start();
@@ -111,6 +116,7 @@ public class AnalyzeFragment extends Fragment {
         } catch (Exception e) {
 
         }
+        GlobalVariable.score = (int)GlobalVariable.score/fileList.length;
     }
 
     public void ReadTextFile(String foldername, String filename) {
@@ -208,17 +214,17 @@ public class AnalyzeFragment extends Fragment {
                         int x = txtList.get(i).indexOf("회원님");
                         if (txtList.get(i).contains(twonewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j));
+                                GlobalVariable.score += wordList.get(wordArr.get(j));
                                 twoScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(onenewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j)) * 1.5;
+                                GlobalVariable.score += wordList.get(wordArr.get(j)) * 1.5;
                                 oneScore += wordList.get(wordArr.get(j));
                             }
                         } else if (txtList.get(i).contains(tonewdate)) {
                             if (x > 20 && x < 30) {
-                                score += wordList.get(wordArr.get(j)) * 2;
+                                GlobalVariable.score += wordList.get(wordArr.get(j)) * 2;
                                 toScore += wordList.get(wordArr.get(j));
                             }
                         }
