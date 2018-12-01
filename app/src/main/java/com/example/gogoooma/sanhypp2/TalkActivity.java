@@ -1,12 +1,18 @@
 package com.example.gogoooma.sanhypp2;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
+import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,39 +41,19 @@ public class TalkActivity extends AppCompatActivity {
     // 단어 저장할 변수
     HashMap<String, Integer> wordList;
     // 단어 잠깐 저장해둔 거
+    AppCompatDialog progressDialog = null;
+    Thread thread, thread2;
 
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
     ArrayList<String> wordArr = new ArrayList<>();
     ArrayList<String> removeWord = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talk);
         wordList = new HashMap<>();
-        Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
-        while (scanner.hasNextLine()) {
-            String wordListWord = scanner.nextLine();
-            int wordListScore = Integer.parseInt(scanner.nextLine());
-            if (wordListWord.length() > 1) {
-                if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
-                    wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
-                if (wordListWord.length() > 2)
-                    if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
-                        wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
-                wordList.put(wordListWord, wordListScore);
-                wordArr.add(wordListWord);
-            }
-        }
-        scanner.close();
-
-        Scanner scanner2 = new Scanner(getResources().openRawResource(R.raw.removeword));
-        while(scanner2.hasNextLine()){
-            String word = scanner2.nextLine();
-            removeWord.add(word);
-        }
-
-        scanner2.close();
 
         Intent intent = getIntent();
         final String folderPath = intent.getStringExtra("folderPath");
@@ -85,12 +71,46 @@ public class TalkActivity extends AppCompatActivity {
         talkContent = (TextView) findViewById(R.id.talkContent);
         talkContent.setMovementMethod(new ScrollingMovementMethod());
         talkContent.setText("");
-        ReadTextFile(folderPath, "KakaoTalkChats.txt");
-        talkContent.setText("");
-        //Toast.makeText(TalkActivity.this, "Please Waiting", Toast.LENGTH_SHORT).show();
 
-        searchBinary();
-        talkContent.setText("분석 완료!");
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Scanner scanner = new Scanner(getResources().openRawResource(R.raw.word));
+                while (scanner.hasNextLine()) {
+                    String wordListWord = scanner.nextLine();
+                    int wordListScore = Integer.parseInt(scanner.nextLine());
+                    if (wordListWord.length() > 1) {
+                        if (wordListWord.substring(wordListWord.length() - 1, wordListWord.length()).equals("다"))
+                            wordListWord = wordListWord.substring(0, wordListWord.length() - 1);
+                        if (wordListWord.length() > 2)
+                            if (wordListWord.substring(wordListWord.length() - 2, wordListWord.length()).equals("하고"))
+                                wordListWord = wordListWord.substring(0, wordListWord.length() - 2);
+                        wordList.put(wordListWord, wordListScore);
+                        wordArr.add(wordListWord);
+                    }
+                }
+                scanner.close();
+
+                Scanner scanner2 = new Scanner(getResources().openRawResource(R.raw.removeword));
+                while(scanner2.hasNextLine()){
+                    String word = scanner2.nextLine();
+                    removeWord.add(word);
+                }
+
+                scanner2.close();
+                ReadTextFile(folderPath, "KakaoTalkChats.txt");
+                searchBinary();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        talkContent.setText("분석완료");
+                    }
+                });
+            }
+        });
+        thread.start();
+        startProgress();
+        talkContent.setText("");
     }
 
     public void ReadTextFile(String foldername, String filename) {
@@ -205,25 +225,16 @@ public class TalkActivity extends AppCompatActivity {
                         GlobalVariable.dayAllList.add(startdate);
                         cal1.clear();
 
-
-
-
                 }
 
             }
             GlobalVariable.dayAllScore.add(yourScore);
-            Toast.makeText(this, GlobalVariable.dayAllList.size() + "", Toast.LENGTH_SHORT).show();
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
     public void countWordFreq() {
-        for(int i=0;i<GlobalVariable.dayAllScore.size();i++){
-            if(!GlobalVariable.dayAllScore.get(i).equals(0))
-            Toast.makeText(getApplicationContext(),String.valueOf(GlobalVariable.dayAllScore.get(i)),Toast.LENGTH_SHORT).show();
-        }
-
         GlobalVariable.wordIUse.clear();
         GlobalVariable.wordYouUse.clear();
         for (int i = 0; i < txtList.size(); i++) {
@@ -297,5 +308,76 @@ public class TalkActivity extends AppCompatActivity {
         });
 
         return list;
+    }
+
+    private void startProgress() {
+        progressON(this, "카카오톡 분석 중입니다...");
+
+        thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    thread.join();
+                } catch (Exception e) {
+                }
+                progressOFF();
+            }
+        });
+        thread2.start();
+
+    }
+
+    public void progressON(Activity activity, String message) {
+
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressSET(message);
+        } else {
+
+            progressDialog = new AppCompatDialog(activity);
+            progressDialog.setCancelable(false);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.fragment_loading);
+            progressDialog.show();
+
+        }
+
+
+        final ImageView img_loading_frame = (ImageView) progressDialog.findViewById(R.id.iv_frame_loading);
+        final AnimationDrawable frameAnimation = (AnimationDrawable) img_loading_frame.getBackground();
+        img_loading_frame.post(new Runnable() {
+            @Override
+            public void run() {
+                frameAnimation.start();
+            }
+        });
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+    }
+
+    public void progressSET(String message) {
+
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            return;
+        }
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+
+    }
+
+    public void progressOFF() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

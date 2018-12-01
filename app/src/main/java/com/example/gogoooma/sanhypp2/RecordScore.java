@@ -7,11 +7,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 public class RecordScore {
     String name;
     String fileName;
     String contents;
+    boolean overwrite;
+
+    public void writeThisFile(String fileName, String contents, boolean overwrite){
+        this.fileName = fileName;
+        this.contents = contents;
+        this.overwrite = overwrite;
+        WriteTextFile();
+    }
 
     public void WriteTextFile(){
         try{
@@ -22,9 +31,9 @@ public class RecordScore {
                 dir.mkdir();
             }
             //파일 output stream 생성
-            FileOutputStream fos = new FileOutputStream(foldername+"/"+fileName, false);
+            FileOutputStream fos = new FileOutputStream(foldername+"/"+fileName, overwrite);
             //파일쓰기
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"));
             writer.write(contents);
             writer.flush();
 
