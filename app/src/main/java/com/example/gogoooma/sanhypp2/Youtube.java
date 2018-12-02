@@ -17,7 +17,7 @@ public class Youtube extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_youtube);
-        playlists = new ArrayList<String>(Arrays.asList("우울할 때 듣는 노래","기쁠 때 듣는 노래"));
+        playlists = new ArrayList<String>(Arrays.asList("우울할 때 듣는 노래","기쁠 때 듣는 노래","잔잔한 노래"));
         try {
             urlWord = URLEncoder.encode(playlists.get(0),"UTF-8");
         } catch (UnsupportedEncodingException e) {

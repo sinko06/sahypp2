@@ -1,12 +1,11 @@
 
 package com.example.gogoooma.sanhypp2;
-
-import android.support.v4.app.Fragment;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -38,15 +36,14 @@ import com.github.mikephil.charting.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListener,
-        OnChartGestureListener, OnChartValueSelectedListener {
+public class LineChartActivity1 extends Fragment implements OnChartGestureListener, OnChartValueSelectedListener {
 
     private LineChart mChart;
     private SeekBar mSeekBarX, mSeekBarY;
     private TextView tvX, tvY;
-
     View v;
 
+    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.activity_linechart, container, false);
 
@@ -54,14 +51,6 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
         tvX = v.findViewById(R.id.tvXMax);
         tvY = v.findViewById(R.id.tvYMax);
 
-        mSeekBarX = v.findViewById(R.id.seekBar1);
-        mSeekBarY = v.findViewById(R.id.seekBar2);
-
-        mSeekBarX.setProgress(45);
-        mSeekBarY.setProgress(100);
-
-        mSeekBarY.setOnSeekBarChangeListener(this);
-        mSeekBarX.setOnSeekBarChangeListener(this);
 
         mChart = v.findViewById(R.id.chart1);
         mChart.setOnChartGestureListener(this);
@@ -88,7 +77,9 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
 
         // create a custom MarkerView (extend MarkerView) and specify the layout
         // to use for it
-
+        MyMarkerView mv = new MyMarkerView(v.getContext(), R.layout.custom_marker_view);
+        mv.setChartView(mChart); // For bounds control
+        mChart.setMarker(mv); // Set the marker to the chart
 
         // x-axis limit line
         LimitLine llXAxis = new LimitLine(10f, "Index 10");
@@ -101,8 +92,6 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
         xAxis.enableGridDashedLine(10f, 10f, 0f);
         //xAxis.setValueFormatter(new MyCustomXAxisValueFormatter());
         //xAxis.addLimitLine(llXAxis); // add x-axis limit line
-
-
 
         LimitLine ll1 = new LimitLine(150f, "Upper Limit");
         ll1.setLineWidth(4f);
@@ -152,10 +141,8 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
 
         // // dont forget to refresh the drawing
         // mChart.invalidate();
-
         return v;
     }
-
 
 
     @Override
@@ -287,7 +274,6 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
                 break;
             }
             case R.id.animateY: {
-
                 break;
             }
             case R.id.animateXY: {
@@ -298,29 +284,6 @@ public class LineChartActivity1 extends Fragment implements OnSeekBarChangeListe
         return true;
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-        tvX.setText("" + (mSeekBarX.getProgress() + 1));
-        tvY.setText("" + (mSeekBarY.getProgress()));
-
-        setData(mSeekBarX.getProgress() + 1, mSeekBarY.getProgress());
-
-        // redraw
-        mChart.invalidate();
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
-
-    }
 
     private void setData(int count, float range) {
 
