@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.jaudiotagger.audio.AudioFileIO;
@@ -29,6 +30,8 @@ public class MusicActivity extends AppCompatActivity {
     List<String> energeticGenre;
     List<String> loudGenre;
     private Boolean isFabOpen = false;
+    TextView tv1, tv2, tv3;
+    ImageButton b1, b2, b3;
 
     private android.support.design.widget.FloatingActionButton fab, fab1, fab2, fab3;
     private android.view.animation.Animation fab_open, fab_close, rotate_forward, rotate_backward;
@@ -42,12 +45,42 @@ public class MusicActivity extends AppCompatActivity {
         fab1 = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fab1);
         fab2 = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fab2);
         fab3 = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fab3);
+        tv1 = (TextView)findViewById(R.id.musicText);
+        tv2 = (TextView)findViewById(R.id.musicText2);
+        tv3 = (TextView)findViewById(R.id.musicText3);
+        b1 = (ImageButton) findViewById(R.id.musicButton);
+        b2 = (ImageButton) findViewById(R.id.musicButton2);
+        b3 = (ImageButton) findViewById(R.id.musicButton3);
 
         fab_open = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_open);
         fab_close = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_close);
         rotate_forward = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.rotate_forward);
         rotate_backward = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.rotate_backward);
         final FragmentManager manager = getFragmentManager();
+
+        b1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickFab();
+                manager.beginTransaction().replace(R.id.content_music, new AnalyzeMusicFragment()).commit();
+            }
+        });
+        b2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickFab();
+                Intent intent = new Intent(getApplicationContext(), Youtube.class);
+                startActivity(intent);
+            }
+        });
+        b3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickFab();
+                manager.beginTransaction().replace(R.id.content_music, new chooseGenreActivity()).commit();
+            }
+        });
+
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,6 +91,7 @@ public class MusicActivity extends AppCompatActivity {
         fab1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                clickFab();
                 manager.beginTransaction().replace(R.id.content_music, new chooseGenreActivity()).commit();
 
             }
@@ -65,6 +99,7 @@ public class MusicActivity extends AppCompatActivity {
         fab2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                clickFab();
                 Intent intent = new Intent(getApplicationContext(), Youtube.class);
                 startActivity(intent);
             }
@@ -73,12 +108,22 @@ public class MusicActivity extends AppCompatActivity {
         fab3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                clickFab();
                 manager.beginTransaction().replace(R.id.content_music, new AnalyzeMusicFragment()).commit();
             }
         });
 
 
         init();
+    }
+
+    public void clickFab(){
+        tv1.setVisibility(View.GONE);
+        tv2.setVisibility(View.GONE);
+        tv3.setVisibility(View.GONE);
+        b1.setVisibility(View.GONE);
+        b2.setVisibility(View.GONE);
+        b3.setVisibility(View.GONE);
     }
 
 

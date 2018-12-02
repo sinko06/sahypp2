@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -68,7 +67,7 @@ public class TalkActivity extends AppCompatActivity {
                 rs.WriteTextFile();
             }
         });
-        talkContent = (TextView) findViewById(R.id.talkContent);
+        talkContent = (TextView) findViewById(R.id.musicText);
         talkContent.setMovementMethod(new ScrollingMovementMethod());
         talkContent.setText("");
 

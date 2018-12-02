@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 public class chooseGenreActivity extends Fragment {
     View v;
@@ -20,10 +21,10 @@ public class chooseGenreActivity extends Fragment {
     }
 
     public void init(){
-        Button b1 = (Button)v.findViewById(R.id.sadButton);
-        Button b2 = (Button)v.findViewById(R.id.positiveButton);
-        Button b3 = (Button)v.findViewById(R.id.energeticButton);
-        Button b4 = (Button)v.findViewById(R.id.loudButton);
+        ImageButton b1 = (ImageButton)v.findViewById(R.id.sadButton);
+        ImageButton b2 = (ImageButton)v.findViewById(R.id.positiveButton);
+        ImageButton b3 = (ImageButton)v.findViewById(R.id.energeticButton);
+        ImageButton b4 = (ImageButton)v.findViewById(R.id.loudButton);
         final Intent i = new Intent(v.getContext(), CellMusic.class);
 
         b1.setOnClickListener(new View.OnClickListener() {
