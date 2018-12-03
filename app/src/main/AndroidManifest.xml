@@ -25,7 +25,8 @@
             android:theme="@style/AppTheme.NoActionBar">
 
         </activity>
-        <activity android:name=".StartActivity">
+        <activity android:name=".StartActivity"
+            android:theme="@style/AppTheme.NoActionBar">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 
@@ -35,7 +36,6 @@
         <activity android:name=".TalkActivity" />
         <activity android:name=".ChartActivity" />
         <activity android:name=".MusicActivity" />
-        <activity android:name=".Youtube" />
         <activity android:name=".CellMusic" />
     </application>
 

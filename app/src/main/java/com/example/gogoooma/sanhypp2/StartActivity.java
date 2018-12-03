@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 public class StartActivity extends AppCompatActivity {
@@ -11,6 +12,8 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_start);
         imageView = (ImageView)findViewById(R.id.imageView);
 
@@ -19,9 +22,10 @@ public class StartActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             public void run() {
                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                finish();
                 startActivity(intent);
             }
-        }, 2000);  // 2000은 2초를 의미합니다.
+        }, 1500);  // 2000은 2초를 의미합니다.
 
     }
 }
