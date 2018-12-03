@@ -13,7 +13,11 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,18 +27,22 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 public class TalkActivity extends AppCompatActivity {
-    TextView talkContent;
-
+    TextView t1,t2,t3,t4,t5,t6;
+    int ipos = 0, ineg = 0;
+    int upos = 0, uneg = 0;
     String name = null;
     Long calDate;
     // 단어 저장할 변수
@@ -42,6 +50,8 @@ public class TalkActivity extends AppCompatActivity {
     // 단어 잠깐 저장해둔 거
     AppCompatDialog progressDialog = null;
     Thread thread, thread2;
+    int num1=0, num2=0;
+    LinearLayout line;
 
     // line 읽어오면서 라인 하나하나 다 저장
     ArrayList<String> txtList = new ArrayList<>();
@@ -60,16 +70,28 @@ public class TalkActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                countWordFreq();
-                RecordScore rs = new RecordScore();
-                rs.fileName = name + ".txt";
-                rs.contents = "hi";
-                rs.writeThisFile(rs.fileName, rs.contents, false);
+                thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        RecordScore rs = new RecordScore();
+                        rs.fileName = name + ".txt";
+                        rs.contents = "hi";
+                        rs.writeThisFile(rs.fileName, rs.contents, false);
+                        Intent intent = new Intent(getApplicationContext(), ChartActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                thread.start();
+                startProgress();
             }
         });
-        talkContent = (TextView) findViewById(R.id.musicText);
-        talkContent.setMovementMethod(new ScrollingMovementMethod());
-        talkContent.setText("");
+        line = (LinearLayout) findViewById(R.id.linearLayoutTalk);
+        t1 = (TextView) findViewById(R.id.talkText1);
+        t2 = (TextView) findViewById(R.id.talkText2);
+        t3 = (TextView) findViewById(R.id.talkText3);
+        t4 = (TextView) findViewById(R.id.talkText4);
+        t5 = (TextView) findViewById(R.id.talkText5);
+        t6 = (TextView) findViewById(R.id.talkText6);
 
         thread = new Thread(new Runnable() {
             @Override
@@ -91,7 +113,7 @@ public class TalkActivity extends AppCompatActivity {
                 scanner.close();
 
                 Scanner scanner2 = new Scanner(getResources().openRawResource(R.raw.removeword));
-                while(scanner2.hasNextLine()){
+                while (scanner2.hasNextLine()) {
                     String word = scanner2.nextLine();
                     removeWord.add(word);
                 }
@@ -99,17 +121,24 @@ public class TalkActivity extends AppCompatActivity {
                 scanner2.close();
                 ReadTextFile(folderPath, "KakaoTalkChats.txt");
                 searchBinary();
+                countWordFreq();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        talkContent.setText("대충 있어보이는 내용으로 채울 예정 ex) 오늘 한 말 수나 가장 긍정적인 말(점수max)이 들어간 대화 등 통계 대충 넣기");
+
+                        line.setVisibility(View.VISIBLE);
+                        t1.setText(">  " + num1);
+                        t2.setText(">  " + num2);
+                        t3.setText(">  " + txtList.get(ipos));
+                        t4.setText(">  " + txtList.get(ineg));
+                        t5.setText(">  " + txtList.get(upos));
+                        t6.setText(">  " + txtList.get(uneg));
                     }
                 });
             }
         });
         thread.start();
         startProgress();
-        talkContent.setText("");
     }
 
     public void ReadTextFile(String foldername, String filename) {
@@ -134,7 +163,7 @@ public class TalkActivity extends AppCompatActivity {
                         continue;
                     }
                 }
-                if (line.length() >= 0 && line.length() <= 2  && txtList.size() > 2) {
+                if (line.length() >= 0 && line.length() <= 2 && txtList.size() > 2) {
                     int idx = txtList.size() - 1;
                     Log.d(line, idx + "");
                     txtList.set(idx, txtList.get(idx) + " " + line);
@@ -186,50 +215,70 @@ public class TalkActivity extends AppCompatActivity {
 
             boolean flag = false;
             int yourScore = 0;
+            int iscoremax=0, uscoremax=0;
+            int iscoremin=0, uscoremin=0;
+
             for (int i = high; i < txtList.size(); i++) {
                 if (txtList.get(i).indexOf("일") == -1)
                     continue;
                 if (txtList.get(i).contains(startdate)) {
                     flag = true;
+                    int tempi=0, tempu=0;
                     for (int j = 0; j < wordArr.size(); j++) {
                         if (txtList.get(i).contains(wordArr.get(j))) {
                             int x = txtList.get(i).indexOf("회원님");
                             if (x > 20 && x < 30) {
-
+                                tempi += wordList.get(wordArr.get(i));
                             } else {
                                 yourScore += wordList.get(wordArr.get(i));
+                                tempu += wordList.get(wordArr.get(i));
                             }
-
                         }
                     }
+                    if(tempi < iscoremin) {
+                        iscoremin = tempi;
+                        ineg = i;
+                    }
+                    if(tempu < uscoremin) {
+                        uscoremin = tempu;
+                        uneg = i;
+                    }
+                    if(tempi > iscoremax) {
+                        iscoremax = tempi;
+                        ipos = i;
+                    }
+                    if(tempu > uscoremax) {
+                        uscoremax = tempu;
+                        upos = i;
+                    }
                 } else {
-                    if(!flag)
+                    if (!flag)
                         i--;
                     else
                         flag = false;
-                        GlobalVariable.dayAllScore.add(yourScore);
-                        yourScore = 0;
-                        startdatenum++;
-                        Calendar cal1= Calendar.getInstance();
-                        cal1.add(cal1.DATE, startdatenum);
-                        Date dayago = cal1.getTime();
-                        String string = simpleDateFormat.format(dayago);
-                        Date datetemp = simpleDateFormat.parse(string);
-                        String date = newsimpleDateFormat.format(datetemp);
-                        Log.d(date,"날짜");
-                        Log.d(txtList.get(i),"내용");
-                        Log.d(String.valueOf(startdatenum),"num");
-                        //Toast.makeText(getApplicationContext(),string,Toast.LENGTH_SHORT).show();
-                        startdate = date;
-                        GlobalVariable.dayAllList.add(startdate);
-                        cal1.clear();
+                    GlobalVariable.dayAllScore.add(yourScore);
+                    yourScore = 0;
+                    startdatenum++;
+                    Calendar cal1 = Calendar.getInstance();
+                    cal1.add(cal1.DATE, startdatenum);
+                    Date dayago = cal1.getTime();
+                    String string = simpleDateFormat.format(dayago);
+                    Date datetemp = simpleDateFormat.parse(string);
+                    String date = newsimpleDateFormat.format(datetemp);
+                    Log.d(date, "날짜");
+                    Log.d(txtList.get(i), "내용");
+                    Log.d(String.valueOf(startdatenum), "num");
+                    //Toast.makeText(getApplicationContext(),string,Toast.LENGTH_SHORT).show();
+                    startdate = date;
+                    GlobalVariable.dayAllList.add(startdate);
+                    cal1.clear();
 
                 }
 
             }
             GlobalVariable.dayAllScore.add(yourScore);
 
-            for(int i=startdatenum;i<=0;i++){
+            for (int i = startdatenum; i <= 0; i++) {
                 GlobalVariable.dayAllScore.add(0);
             }
         } catch (ParseException e) {
@@ -247,11 +296,13 @@ public class TalkActivity extends AppCompatActivity {
                 String[] words = str.split(" ");
                 for (int j = 0; j < words.length; j++) {
                     if (txtList.get(i).substring(0, idx).contains("회원님")) {
+                        if(j==0) num1++;
                         if (GlobalVariable.wordIUse.get(words[j]) != null)
                             GlobalVariable.wordIUse.put(words[j], GlobalVariable.wordIUse.get(words[j]) + 1);
                         else
                             GlobalVariable.wordIUse.put(words[j], 1);
                     } else {
+                        if(j==0) num2++;
                         if (GlobalVariable.wordYouUse.get(words[j]) != null)
                             GlobalVariable.wordYouUse.put(words[j], GlobalVariable.wordYouUse.get(words[j]) + 1);
                         else
@@ -260,41 +311,55 @@ public class TalkActivity extends AppCompatActivity {
                 }
             }
         }
+        ArrayList<Character> josa = new ArrayList<>(Arrays.asList('은', '는', '가', '을', '를', '랑', '과', '와', '다', '어', '아', '야'));
+        Object[] keyset = GlobalVariable.wordIUse.keySet().toArray();
+        for (int i=0; i<keyset.length; i++) {
+            try {
+                String key = String.valueOf(keyset[i]);
+                if (key.length() > 0) {
+                    if (josa.contains(key.charAt(key.length() - 1))) {
+                        String cutWord = key.substring(0, key.length() - 1);
+                        if (GlobalVariable.wordIUse.containsKey(cutWord)) {
+                            GlobalVariable.wordIUse.put(cutWord, GlobalVariable.wordIUse.get(key) + GlobalVariable.wordIUse.get(cutWord));
+                            GlobalVariable.wordIUse.remove(key);
+                        } else {
+                            Integer obj = GlobalVariable.wordIUse.remove(key);
+                            GlobalVariable.wordIUse.put(cutWord, obj);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+
         GlobalVariable.myList = sortByValue(GlobalVariable.wordIUse);
         GlobalVariable.yourList = sortByValue(GlobalVariable.wordYouUse);
 
-        for(int i=0;i<GlobalVariable.myList.size();i++){
-            int check=0;
-            for(int j=0;j<removeWord.size();j++){
-                if(GlobalVariable.myList.get(i).equals(removeWord.get(j))){
-                    check=1;
+        for (int i = 0; i < GlobalVariable.myList.size(); i++) {
+            int check = 0;
+            for (int j = 0; j < removeWord.size(); j++) {
+                if (GlobalVariable.myList.get(i).equals(removeWord.get(j))) {
+                    check = 1;
                 }
             }
-            if(check==1){
+            if (check == 1) {
                 GlobalVariable.myList.remove(i);
                 i--;
             }
         }
 
-        for(int i=0;i<GlobalVariable.yourList.size();i++){
-            int check=0;
-            for(int j=0;j<removeWord.size();j++){
-                if(GlobalVariable.yourList.get(i).equals(removeWord.get(j))){
-                    check=1;
+        for (int i = 0; i < GlobalVariable.yourList.size(); i++) {
+            int check = 0;
+            for (int j = 0; j < removeWord.size(); j++) {
+                if (GlobalVariable.yourList.get(i).equals(removeWord.get(j))) {
+                    check = 1;
                 }
             }
-            if(check==1){
+            if (check == 1) {
                 GlobalVariable.yourList.remove(i);
                 i--;
             }
         }
-
-
-
-        Intent intent = new Intent(getApplicationContext(), ChartActivity.class);
-        startActivity(intent);
-
-
     }
 
     public static List sortByValue(final Map map) {

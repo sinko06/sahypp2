@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -37,7 +38,8 @@ import java.util.Scanner;
  */
 public class AnalyzeFragment extends Fragment {
     View v = null;
-    TextView textView = null;
+    TextView textView1 = null;
+    TextView textView2 = null;
     static String folderName = MainFragment.folderName;
     String name = null;
     AppCompatDialog progressDialog = null;
@@ -56,7 +58,8 @@ public class AnalyzeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.fragment_analyze, container, false);
 
-        textView = (TextView) v.findViewById(R.id.analyzeText);
+        textView1 = (TextView) v.findViewById(R.id.analyzeText2);
+        textView2 = (TextView) v.findViewById(R.id.analyzeText4);
         final FloatingActionButton fab = (FloatingActionButton)v.findViewById(R.id.analyzeFab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,7 +94,19 @@ public class AnalyzeFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        textView.setText(GlobalVariable.score+" : 최근 3일간의 기분 점수\r\n 여기도 통계나 이런 거 넣을 예정..");
+                        LinearLayout li = (LinearLayout) v.findViewById(R.id.linearLayoutAnalyze);
+                        li.setVisibility(View.VISIBLE);
+                        textView1.setText(GlobalVariable.score+"");
+                        String emotion = "";
+                        if(GlobalVariable.score < -30)
+                            emotion = "'화날 때 듣는 음악'";
+                        else if(GlobalVariable.score >= -30 && GlobalVariable.score<-10)
+                            emotion = "'우울할 때 듣는 음악'";
+                        else if(GlobalVariable.score >= -10 && GlobalVariable.score<20)
+                            emotion = "'잔잔한 음악'";
+                        else
+                            emotion = "'기쁠 때 듣는 음악'";
+                        textView2.setText(emotion);
                     }
                 });
             }

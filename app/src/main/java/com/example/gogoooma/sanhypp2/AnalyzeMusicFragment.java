@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +18,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.app.Fragment;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
@@ -24,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -64,13 +67,16 @@ public class AnalyzeMusicFragment extends Fragment {
     private ListViewAdapter listViewAdapter = null; // 리스트뷰에 사용되는 ListViewAdapter
     ArrayList<String> arr1 = new ArrayList<>();
     ArrayList<Double> arr2 = new ArrayList<>();
+    ArrayList<String> musicFile = new ArrayList<>();
+    MediaPlayer mp = new MediaPlayer();
+    FloatingActionButton fabbutton;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.activity_cell_music, container, false);
         final File rootFile = new File(root);
-
+        fabbutton = (FloatingActionButton) v.findViewById(R.id.analyzeFab1);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -99,11 +105,41 @@ public class AnalyzeMusicFragment extends Fragment {
                         listViewAdapter = new ListViewAdapter(v.getContext()); // Adapter 생성
                         audiolistView.setAdapter(listViewAdapter); // 어댑터를 리스트뷰에 세팅
                         audiolistView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                        audiolistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                try {
+                                    if(mp.isPlaying()) {
+                                        mp.stop();
+                                    }
+                                    mp = new MediaPlayer();
+                                    mp.setDataSource(musicFile.get(position));
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_pause);
+                                    mp.prepare();
+                                    mp.start();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        fabbutton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if(mp.isPlaying()) {
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_play);
+                                    mp.pause();
+                                }else{
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_pause);
+                                    mp.start();
+                                }
+
+                            }
+                        });
 
                         for(int i=0; i<arr2.size(); i++) {
-                            double score = (arr2.get(i)-30)/60 - 5;
+                            double score = (arr2.get(i)-30)/5 - 60;
                             int glovalScore = GlobalVariable.score;
-                            if(glovalScore - 0.5 <= score && score <= glovalScore + 0.5) {
+                            if(glovalScore - 10 <= score && score <= glovalScore + 10) {
                                 try {
                                     getMusicMetaInfo(arr1.get(i));
                                 }catch (Exception e){}
@@ -357,6 +393,7 @@ public class AnalyzeMusicFragment extends Fragment {
                 String datapath = cur.getString(cur.getColumnIndex(MediaStore.Audio.Media.DATA));
 
                 listViewAdapter.addItem(track_id, albumId, title, artist, album, mDuration, datapath);
+                musicFile.add(fileStr);
             }
         }
         c.close();
