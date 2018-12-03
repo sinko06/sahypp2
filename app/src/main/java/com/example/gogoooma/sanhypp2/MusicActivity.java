@@ -1,12 +1,19 @@
 package com.example.gogoooma.sanhypp2;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.jaudiotagger.audio.AudioFileIO;
@@ -24,6 +31,7 @@ public class MusicActivity extends AppCompatActivity {
     List<String> musicList;
     List<String> genreList;
     List<String> titleList;
+    AppCompatDialog progressDialog = null;
 
     List<String> sadGenre;
     List<String> positiveGenre;
@@ -32,6 +40,7 @@ public class MusicActivity extends AppCompatActivity {
     private Boolean isFabOpen = false;
     TextView tv1, tv2, tv3;
     ImageButton b1, b2, b3;
+    Thread thread;
 
     private android.support.design.widget.FloatingActionButton fab, fab1, fab2, fab3;
     private android.view.animation.Animation fab_open, fab_close, rotate_forward, rotate_backward;
@@ -99,8 +108,8 @@ public class MusicActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 clickFab();
-                Intent intent = new Intent(getApplicationContext(), Youtube.class);
-                startActivity(intent);
+                manager.beginTransaction().replace(R.id.content_music, new Youtube()).commit();
+
             }
         });
 
@@ -112,8 +121,12 @@ public class MusicActivity extends AppCompatActivity {
             }
         });
 
-
-        init();
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
     }
 
     public void clickFab(){
@@ -236,6 +249,75 @@ public class MusicActivity extends AppCompatActivity {
                     break;
                 }
             }
+        }
+    }
+    private void startProgress() {
+        progressON(this, "음악 분석 중입니다...");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    thread.join();
+                } catch (Exception e) {
+                }
+                progressOFF();
+            }
+        }).start();
+
+    }
+
+    public void progressON(Activity activity, String message) {
+
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressSET(message);
+        } else {
+
+            progressDialog = new AppCompatDialog(activity);
+            progressDialog.setCancelable(false);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.fragment_loading);
+            progressDialog.show();
+
+        }
+
+
+        final ImageView img_loading_frame = (ImageView) progressDialog.findViewById(R.id.iv_frame_loading);
+        img_loading_frame.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.music_loading));
+        final AnimationDrawable frameAnimation = (AnimationDrawable) img_loading_frame.getBackground();
+        img_loading_frame.post(new Runnable() {
+            @Override
+            public void run() {
+                frameAnimation.start();
+            }
+        });
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+    }
+
+    public void progressSET(String message) {
+
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            return;
+        }
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+
+    }
+
+    public void progressOFF() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
         }
     }
 }

@@ -16,6 +16,7 @@ public class chooseGenreActivity extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.activity_choose_genre, container, false);
+        init();
 
         return v;
     }
