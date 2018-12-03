@@ -228,6 +228,10 @@ public class TalkActivity extends AppCompatActivity {
 
             }
             GlobalVariable.dayAllScore.add(yourScore);
+
+            for(int i=startdatenum;i<=0;i++){
+                GlobalVariable.dayAllScore.add(0);
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
