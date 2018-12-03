@@ -53,7 +53,7 @@ public class CellMusic extends AppCompatActivity {
 
     }
 
-    private void loadAudio() {
+    public void loadAudio() {
         ContentResolver contentResolver = getContentResolver();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -184,12 +184,12 @@ public class CellMusic extends AppCompatActivity {
     }
 
     /* Album ID로 부터 Bitmap 이미지를 생성해 리턴해 주는 메소드 */
-    private static final BitmapFactory.Options sBitmapOptionsCache = new BitmapFactory.Options();
-    private static final Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+    public static final BitmapFactory.Options sBitmapOptionsCache = new BitmapFactory.Options();
+    public static final Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
 
     // Get album art for specified album. This method will not try to
     // fall back to getting artwork directly from the file, nor will it attempt to repair the database.
-    private static Bitmap getArtworkQuick(Context context, int album_id, int w, int h) {
+    public static Bitmap getArtworkQuick(Context context, int album_id, int w, int h) {
         w -= 2;
         h -= 2;
         ContentResolver res = context.getContentResolver();

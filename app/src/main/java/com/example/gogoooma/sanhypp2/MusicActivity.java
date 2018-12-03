@@ -69,8 +69,7 @@ public class MusicActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 clickFab();
-                Intent intent = new Intent(getApplicationContext(), Youtube.class);
-                startActivity(intent);
+                manager.beginTransaction().replace(R.id.content_music, new Youtube()).commit();
             }
         });
         b3.setOnClickListener(new View.OnClickListener() {

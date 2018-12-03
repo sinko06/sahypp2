@@ -64,7 +64,7 @@ public class TalkActivity extends AppCompatActivity {
                 RecordScore rs = new RecordScore();
                 rs.fileName = name + ".txt";
                 rs.contents = "hi";
-                rs.WriteTextFile();
+                rs.writeThisFile(rs.fileName, rs.contents, false);
             }
         });
         talkContent = (TextView) findViewById(R.id.musicText);
