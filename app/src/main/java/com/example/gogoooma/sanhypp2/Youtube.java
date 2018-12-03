@@ -27,9 +27,9 @@ public class Youtube extends Fragment {
         playlists = new ArrayList<String>(Arrays.asList("화날 때 듣는 노래", "우울할 때 듣는 노래", "잔잔한 노래", "기쁠 때 듣는 노래"));
         int score = 0;
         int globalScore = GlobalVariable.score;
-        if(globalScore < -3) score = 0;
-        else if(-3 <= globalScore && globalScore <= -1) score = 1;
-        else if(0 < globalScore && globalScore <= 2) score = 2;
+        if(globalScore < -30) score = 0;
+        else if(-30 <= globalScore && globalScore <= -10) score = 1;
+        else if(-10 < globalScore && globalScore <= 20) score = 2;
         else score = 3;
         try {
             urlWord = URLEncoder.encode(playlists.get(score),"UTF-8");
