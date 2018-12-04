@@ -9,15 +9,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialog;
 import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,11 +29,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 
 public class TalkActivity extends AppCompatActivity {
     TextView t1,t2,t3,t4,t5,t6;
@@ -228,10 +222,10 @@ public class TalkActivity extends AppCompatActivity {
                         if (txtList.get(i).contains(wordArr.get(j))) {
                             int x = txtList.get(i).indexOf("회원님");
                             if (x > 20 && x < 30) {
-                                tempi += wordList.get(wordArr.get(i));
+                                tempi += wordList.get(wordArr.get(j));
                             } else {
-                                yourScore += wordList.get(wordArr.get(i));
-                                tempu += wordList.get(wordArr.get(i));
+                                yourScore += wordList.get(wordArr.get(j));
+                                tempu += wordList.get(wordArr.get(j));
                             }
                         }
                     }

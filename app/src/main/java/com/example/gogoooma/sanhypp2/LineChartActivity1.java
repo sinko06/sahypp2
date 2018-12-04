@@ -48,8 +48,6 @@ public class LineChartActivity1 extends Fragment implements OnChartGestureListen
         v = inflater.inflate(R.layout.activity_linechart, container, false);
 
 
-        tvX = v.findViewById(R.id.tvXMax);
-        tvY = v.findViewById(R.id.tvYMax);
 
 
         mChart = v.findViewById(R.id.chart1);
