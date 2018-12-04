@@ -114,7 +114,7 @@ public class chooseGenreActivity extends Fragment {
             positiveGenre.add(s4.nextLine());
         }
 
-        for (int i = 0; i < (int) musicList.size() / 10; i++) {
+        for (int i = 0; i < musicList.size(); i++) {
             for (int j = 0; j < sadGenre.size(); j++) {
                 if (sadGenre.get(j).equals(genreList.get(i))) {
                     GlobalVariable.music.add(new MyMusic(musicList.get(i), titleList.get(i), "sad"));

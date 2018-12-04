@@ -1,5 +1,6 @@
 package com.example.gogoooma.sanhypp2;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -7,32 +8,55 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class CellMusic extends AppCompatActivity {
 
     private ListView audiolistView; // 리스트뷰
     private ArrayList<Song_Item> songsList = null; // 데이터 리스트
     private ListViewAdapter listViewAdapter = null; // 리스트뷰에 사용되는 ListViewAdapter
+    ArrayList<String> musicList = new ArrayList<>();
+    ArrayList<String> musics = new ArrayList<>();
+    AppCompatDialog progressDialog = null;
+    MediaPlayer mp = new MediaPlayer();
+
 
     Context context;
-
+    Thread thread;
     String gen;
+    FloatingActionButton fabbutton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,48 +65,138 @@ public class CellMusic extends AppCompatActivity {
         context = this.getBaseContext();
         Intent i = getIntent();
         gen = i.getStringExtra("str");
+        fabbutton = (FloatingActionButton) findViewById(R.id.analyzeFab1);
 
-        // Adapter에 추가 데이터를 저장하기 위한 ArrayList
         songsList = new ArrayList<Song_Item>(); // ArrayList 생성
         audiolistView = (ListView) findViewById(R.id.my_listView);
-        listViewAdapter = new ListViewAdapter(this); // Adapter 생성
-        audiolistView.setAdapter(listViewAdapter); // 어댑터를 리스트뷰에 세팅
-        audiolistView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-        loadAudio();
-
-    }
-
-    public void loadAudio() {
-        ContentResolver contentResolver = getContentResolver();
-
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
-        String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
-        cursor.moveToFirst();
-        if (cursor != null && cursor.getCount() > 0) {
-            do {
-                long track_id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-                long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                long mDuration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
-                String datapath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                // Save to audioList
-                for (int i = 0; i < GlobalVariable.music.size(); i++) {
-                    if (GlobalVariable.music.get(i).getTitle().equals(title) && GlobalVariable.music.get(i).getTag().equals(gen)) {
-                        listViewAdapter.addItem(track_id, albumId, title, artist, album, mDuration, datapath);
-                        break;
-                    }
+        listViewAdapter = new ListViewAdapter(getApplicationContext()); // Adapter 생성
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                findSubFiles(new File(Environment.getExternalStorageDirectory().getAbsolutePath()), new ArrayList<File>());
+                for (int idx = 0; idx < musicList.size(); idx++) {
+                    try {
+                        loadAudio(musicList.get(idx));
+                    }catch (Exception e){}
                 }
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        audiolistView.setAdapter(listViewAdapter); // 어댑터를 리스트뷰에 세팅
+                        audiolistView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                        audiolistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                try {
+                                    if(mp.isPlaying()) {
+                                        mp.stop();
+                                    }
+                                    mp = new MediaPlayer();
+                                    mp.setDataSource(musics.get(position));
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_pause);
+                                    mp.prepare();
+                                    mp.start();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        fabbutton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if(mp.isPlaying()) {
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_play);
+                                    mp.pause();
+                                }else{
+                                    fabbutton.setImageResource(android.R.drawable.ic_media_pause);
+                                    mp.start();
+                                }
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        thread.start();
+        startProgress();
+        // Adapter에 추가 데이터를 저장하기 위한 ArrayList
+
     }
 
+    private void loadAudio(String fileStr) {
+        Uri fileUri = Uri.parse(fileStr);
+        String filePath = fileUri.getPath();
+        Cursor c = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, "_data ='" + filePath + "'", null, null);
+        c.moveToNext();
+        if (c.getCount() > 0) {
+            int id = c.getInt(0);
+            Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+            Log.d("g", fileStr + "'s uri : " + uri.toString());
+            Cursor cur = getContentResolver().query(uri, null, null, null, null);
+            if (cur.moveToFirst()) {
+                //   int artistColumn = cur.getColumnIndex(MediaStore.Audio.AlbumColumns.ARTIST);
+                long track_id = cur.getLong(cur.getColumnIndex(MediaStore.Audio.Media._ID));
+                String title = cur.getString(cur.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE));
+                String artist = cur.getString(cur.getColumnIndex(MediaStore.Audio.AlbumColumns.ARTIST));
+                String album = cur.getString(cur.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM));
+                long mDuration = cur.getLong(cur.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION));
+                long albumId = cur.getLong(cur.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+                String datapath = cur.getString(cur.getColumnIndex(MediaStore.Audio.Media.DATA));
+                try {
+                    ArrayList<String> genre = new ArrayList<>();
+
+                    if (gen.equals("sad")) {
+                        Scanner s1 = new Scanner(getResources().openRawResource(R.raw.sad));
+                        while (s1.hasNextLine()) {
+                            genre.add(s1.nextLine());
+                        }
+                    } else if (gen.equals("loud")) {
+                        Scanner s2 = new Scanner(getResources().openRawResource(R.raw.loud));
+                        while (s2.hasNextLine()) {
+                            genre.add(s2.nextLine());
+                        }
+                    } else if (gen.equals("energetic")) {
+                        Scanner s3 = new Scanner(getResources().openRawResource(R.raw.energetic));
+                        while (s3.hasNextLine()) {
+                            genre.add(s3.nextLine());
+                        }
+                    } else if (gen.equals("positive")) {
+                        Scanner s4 = new Scanner(getResources().openRawResource(R.raw.positive));
+                        while (s4.hasNextLine()) {
+                            genre.add(s4.nextLine());
+                        }
+                    }
+                    MP3File mp3 = (MP3File) AudioFileIO.read(new File(fileStr));
+                    Tag tag = mp3.getTag();
+                    String g = tag.getFirst(FieldKey.GENRE);
+                    if (genre.contains(g)) {
+                        listViewAdapter.addItem(track_id, albumId, title, artist, album, mDuration, datapath);
+                        musics.add(fileStr);
+                    }
+                } catch (Exception e2) {
+                }
+            }
+        }
+        c.close();
+    }
+
+    public void findSubFiles(File parentFile, ArrayList<File> subFiles) {
+        if (parentFile.isFile()) {
+            String fileName = parentFile.getName();
+            try {
+                if (fileName.substring(fileName.lastIndexOf('.') + 1).equals("mp3")) {
+                    musicList.add(parentFile.getCanonicalPath());
+                }
+            } catch (Exception e) {
+            }
+        } else if (parentFile.isDirectory()) {
+            File[] childFiles = parentFile.listFiles();
+            for (File childFile : childFiles) {
+                findSubFiles(childFile, subFiles);
+            }
+        }
+    }
 
     class ViewHolder {
         public ImageView mImgAlbumArt;
@@ -236,5 +350,76 @@ public class CellMusic extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+
+    private void startProgress() {
+        progressON(this, "음악 분석 중입니다...");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    thread.join();
+                } catch (Exception e) {
+                }
+                progressOFF();
+            }
+        }).start();
+
+    }
+
+    public void progressON(Activity activity, String message) {
+
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressSET(message);
+        } else {
+
+            progressDialog = new AppCompatDialog(activity);
+            progressDialog.setCancelable(false);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.fragment_loading);
+            progressDialog.show();
+
+        }
+
+
+        final ImageView img_loading_frame = (ImageView) progressDialog.findViewById(R.id.iv_frame_loading);
+        img_loading_frame.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.music_loading));
+        final AnimationDrawable frameAnimation = (AnimationDrawable) img_loading_frame.getBackground();
+        img_loading_frame.post(new Runnable() {
+            @Override
+            public void run() {
+                frameAnimation.start();
+            }
+        });
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+    }
+
+    public void progressSET(String message) {
+
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            return;
+        }
+
+        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
+        if (!TextUtils.isEmpty(message)) {
+            tv_progress_message.setText(message);
+        }
+
+    }
+
+    public void progressOFF() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 }

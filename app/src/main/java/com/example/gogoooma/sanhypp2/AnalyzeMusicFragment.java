@@ -138,8 +138,8 @@ public class AnalyzeMusicFragment extends Fragment {
 
                         for(int i=0; i<arr2.size(); i++) {
                             double score = (arr2.get(i)-30)/5 - 60;
-                            int glovalScore = GlobalVariable.score;
-                            if(glovalScore - 10 <= score && score <= glovalScore + 10) {
+                            int glovalScore = -60;
+                            if(glovalScore - 5 <= score && score <= glovalScore + 5) {
                                 try {
                                     getMusicMetaInfo(arr1.get(i));
                                 }catch (Exception e){}
